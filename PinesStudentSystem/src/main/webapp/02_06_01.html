@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	
+    <meta name="viewport" content="width=device-width, initial-scale=1.0 ,maximum-scale=1.0, minimum-scale=1.0,user-scalable=no,target-densitydpi=medium-dpi">        
+	<script type="text/javascript" src="js/jquery.min.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/i18next/1.9.0/i18next.min.js"></script>
+	<script type="text/javascript" src="js/common.js" charset="utf-8"></script>
+	<script type="text/javascript" src="js/custom.js"></script>
+	<link rel="stylesheet" href="css/font-awesome.min.css">
+	<link href="css/common.css" rel="stylesheet" type="text/css">	
+	<link href="css/reset.css" rel="stylesheet" type="text/css">
+	<link rel="icon" href="img/pia-icon.png" type="image/gif" sizes="48x48"/>
+	<script type="text/javascript" src="js/jquery.cookie.js"></script>
+	<script type="text/javascript">
+	$(document).ready(function() {
+		changeLang($.cookie("changeLang"));
+	});
+	</script>
+	
+</head>
+<body class="translation" style="background-color: #e9ebef;">
+	<h2 id="header"><span data-i18n="common:bookmark"></span><div class="bookmark bookmarkOn"><i class="fa fa-star-o" aria-hidden="true"></i></div></h2>
+	
+	<section>
+
+		<div class="wrap">
+			<div class="bookmarkInfo">
+                <i class="fa fa-star-o" aria-hidden="true"></i>
+                <p data-i18n="bookmark:bookmarkinfo"></p>
+                <ul>
+                    <li><span></span><p data-i18n="bookmark:bookmarkinfo01"></p></li>
+                    <li><span></span><p data-i18n="bookmark:bookmarkinfo02"></p></li>
+                    <li><span></span><p data-i18n="bookmark:bookmarkinfo03"></p></li>
+                </ul>
+            </div>
+		</div>
+
+	</section>
+    
+    <div class="popup_over"></div>
+    <div class="popup" style="">
+    
+        <h4 data-i18n="campus:activityInfo"></h4>
+        <div class="popupContents">
+            <h5><span></span><b data-i18n="campus:citytour"></b></h5>
+            <table class="tableT02">
+                <colgroup>
+                    <col width="80px">
+                    <col width="*">
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th class="" data-i18n="common:loaction">장소</th>
+                        <td>번함파크, SM몰, 여기, 저기, 여기 ABCED</td>
+                    </tr>
+                    
+                    <tr>
+                        <th data-i18n="common:date">일시</th>
+                        <td>2017-06-12(토) 8시~1시</td>
+                    </tr>
+                    
+                    <tr>
+                        <th data-i18n="contract:chargeStaff">담당자</th>
+                        <td>Starff</td>
+                    </tr>
+                    
+                    <tr>
+                        <th data-i18n="campus:citytour">이동수단</th>
+                        <td>지프니</td>
+                    </tr>
+                    
+                    <tr>
+                        <th data-i18n="campus:pay">비용</th>
+                        <td data-i18n="campus:free">무료</td>
+                    </tr>                    
+                </tbody>
+            </table>
+            <p class="btnCaption"><b style="color: #666" data-i18n="campus:applicationPeriod">접수기간</b><span data-i18n="campus:activetyCaption">2017-06-8(금) 오후 6시 까지</span></p>
+            
+            <div style="text-align: center; ">
+            <button class="popup_join" data-i18n="campus:join">참여하기</button>
+            </div>
+        </div>
+        
+        <div class="popupFooter">
+            <div class="popupFooter_check"><span class="on"></span><b style="font-weight: normal; " data-i18n="popup:dontShow">다시 안보기</b></div>
+            <div class="popupFooter_close" data-i18n="common:close">닫기</div>
+        </div>
+    
+    </div>
+	
+	
+<!--
+	<div>
+	    <a href="javascript:void(0);" onclick="changeLang('en');">영어</a>
+	    <a href="javascript:void(0);" onclick="changeLang('ko');">한국어</a>
+	</div>
+-->
+
+</body>
+</html>

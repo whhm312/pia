@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	
+    <meta name="viewport" content="width=device-width, initial-scale=1.0 ,maximum-scale=1.0, minimum-scale=1.0,user-scalable=no,target-densitydpi=medium-dpi">        
+	<script type="text/javascript" src="js/jquery.min.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/i18next/1.9.0/i18next.min.js"></script>
+	<script type="text/javascript" src="js/common.js" charset="utf-8"></script>
+	<script type="text/javascript" src="js/custom.js"></script>
+	<script type="text/javascript" src="js/jquery.cookie.js"></script>
+	<script type="text/javascript" src="js/pines.js"></script>
+	<link rel="stylesheet" href="css/font-awesome.min.css">
+	<link href="css/common.css" rel="stylesheet" type="text/css">	
+	<link href="css/reset.css" rel="stylesheet" type="text/css">
+	<link rel="icon" href="img/pia-icon.png" type="image/gif" sizes="48x48"/>
+	<script>
+	var COUNT_SERVER_ERROR = 0;
+	$(document).ready(function() {
+		if (!$.cookie("token")) {
+			alert("You need sign in.");
+			window.location.replace("/");
+			return false;
+		}
+		
+		changeLang($.cookie("changeLang"));
+		
+		$(".bookmark").on("click", function() {
+			location.href="02_01_bookmark.html";
+		});
+		
+		getClassTimeTable();
+	});
+	
+	$(window).load(function(){
+		if (COUNT_SERVER_ERROR > 0) {
+			alert("Server Error. Please try again later.");
+		}
+	});
+	
+	function getClassTimeTable() {
+		$.ajax({
+			headers : getHeaders("Authorization", $.cookie("token")),
+			url : SERVER_URI + "/students/" + $.cookie("userId") + "/studies/schedule",
+			type : "GET",
+			dataType : "json",
+			contentType : "application/json; charset=UTF-8",
+			beforeSend : function(jqXHR, settings) {
+				blockScreen();
+			},
+			success : function(data, textStatus, jqXHR) {
+				if (data.head.status == 200) {
+					var $results = data.body.data;
+					//console.log("getClassTimeTable : ", $results);
+					
+					var html = "";
+					var printSubject = "";
+					$(".studyClassTbody").find("tr:gt(0)").remove();
+					
+					if ($results.length > 0) {
+						$.each($results, function(index, item) {
+							if (item.studyMember > 0) {
+								printSubject = "[" + item.studyMember + ":1] " + item.subject; 
+							} else {
+								printSubject = item.subject; 
+							}
+							
+							html = "<tr>";
+							html += "<td class=\"text-center\">" + item.time + "</td>";
+							html += "<td class=\"text-center\">" + item.studyRoom + "</td>";
+							if (item.studyMember > 0) {
+								html += "<td class=\"text-center\">" + printSubject + "</td>";
+							} else {
+								html += "<td class=\"text-center\"></td>";
+							}
+							html += "<td class=\"text-center\">" + item.teacher + "</td>";
+							html += "</tr>";
+							
+							$("#studyClassTbody").append(html);
+						});
+					} else {
+						html = "<tr>";
+						html += "<td colspan=\"4\">";
+						html += "<div class=\"contentNone\" >";
+						html += "<p style=\"text-align:center\" class=\"text-center\" data-i18n=\"education:noClass\"></p>";
+						html += "</div>";
+						html += "</td>";
+						html += "</tr>";
+						
+						$("#studyClassTbody").append(html);
+					}
+					
+					$("#studyClassTbody").i18n();
+					$("#classTimetableDiv").show();
+				} else if (data.head.status == 204) {
+					var html = "<tr>";
+					html += "<td colspan=\"4\">";
+					html += "<div class=\"contentNone\" >";
+					html += "<p style=\"text-align:center\" class=\"text-center\" data-i18n=\"education:noClass\"></p>";
+					html += "</div>";
+					html += "</td>";
+					html += "</tr>";
+					
+					$("#studyClassTbody").append(html);
+					$("#studyClassTbody").i18n();
+					$("#classTimetableDiv").show();
+				} else {
+					console.log("ERROR -----------\n ", data);
+					//alertError(data.head.status, data.head.message);
+					COUNT_SERVER_ERROR++;
+					if (data.head.status == 401) {
+						signout();
+					}
+				}
+			},
+			error : function(jqXHR, textStatus, errorThrown) {
+				console.log("error", jqXHR, textStatus, errorThrown);
+				//alert("Server Error. Please try again later.");
+				COUNT_SERVER_ERROR++;
+			},
+			complete : function(jqXHR, textStatus) {
+				getTestTimeTable();
+			}
+		});
+		
+	}
+	
+	function getTestTimeTable() {
+		if (!$.cookie("userId")) {
+			alert("You need to login again.");
+			signout();
+			return false;
+		}
+		
+		$.ajax({
+			headers : getHeaders("Authorization", $.cookie("token")),
+			url : SERVER_URI + "/students/" + $.cookie("userId") + "/exams/recent/exam",
+			type : "GET",
+			dataType : "json",
+			contentType : "application/json; charset=UTF-8",
+			success : function(data, textStatus, jqXHR) {
+				if (data.head.status == 200) {
+					var $results = data.body.data;
+					//console.log($results);
+					
+					var html = "";
+					var printSubject = "";
+					$("#testPlanUL").children().remove();
+					
+					$.each($results, function(index, item) {
+						html = "";
+						html += "<li>";
+						html += "<h5 id=\"testType\">" + item.examType + "</h5>";
+						if (item.examEndDate) {
+							html += "<p id=\"testDate\">" + item.examStartDate + " ~ " + item.examEndDate + "</p>";
+						} else {
+							html += "<p id=\"testDate\">" + item.examStartDate + "</p>";
+						}
+						if (item.examType == "OPT") {
+							html += "<b data-i18n=\"education:testInfo_1\"></b>";
+							if (item.applicantSeq > 0) {
+								html += "<div data-i18n=\"education:applyCencel\" id=\"optCancelButton\" examSeq=\"" + item.examSeq + "\" applicantSeq=\"" + item.applicantSeq + "\" >신청취소</div>";
+							} else {
+								html += "<div data-i18n=\"education:testApply\" id=\"optApplyButton\" examSeq=\"" + item.examSeq + "\">시험신청</div>";
+							}
+						} else {
+							html += "<b data-i18n=\"education:testInfo_2\"></b>";
+						}
+						html += "</li>";
+						$("#testPlanUL").append(html);
+						
+						$("#optApplyButton").click(optApply);
+						$("#optCancelButton").click(optCancel);
+					});
+					
+					$("#testPlanUL").i18n();
+					$("#examNoticeDiv").show();
+				} else if (data.head.status == 204) {
+				} else {
+					console.log("ERROR -----------\n ", data);
+					//alertError(data.head.status, data.head.message);
+					COUNT_SERVER_ERROR++;
+					if (data.head.status == 401) {
+						signout();
+					}
+				}
+			},
+			error : function(jqXHR, textStatus, errorThrown) {
+				console.log("error", jqXHR, textStatus, errorThrown);
+				//alert("Server Error. Please try again later.");
+				COUNT_SERVER_ERROR++;
+			},
+			complete : function(jqXHR, textStatus) {
+				getTestResults();
+			}
+		});
+		
+	}
+	
+	function optApply() {
+		var examSeq = $("#optApplyButton").attr("examSeq");
+		$.ajax({
+			headers : getHeaders("Authorization", $.cookie("token")),
+			url : SERVER_URI + "/exams/" + examSeq + "/apply",
+			type : "POST",
+			data : examApplyJson(),
+			dataType : "json",
+			contentType : "application/json; charset=UTF-8",
+			success : function(data, textStatus, jqXHR) {
+				if (data.head.status == 200) {
+					var $results = data.body.data;
+					//console.log($results);
+					alertError(data.head.status, data.head.message);
+					getTestTimeTable();
+				} else if (data.head.status == 204) {
+				} else if (data.head.status == 1003 || data.head.status == 1004) {
+					//1003 : AlreadyAppliedExamException
+					//1004 : ClosedApplyExamException
+					alertError(data.head.status, data.head.message);
+					getTestTimeTable();
+				} else {
+					console.log("ERROR -----------\n ", data);
+					//alertError(data.head.status, data.head.message);
+					COUNT_SERVER_ERROR++;
+					if (data.head.status == 401) {
+						signout();
+					}
+				}
+			},
+			error : function(jqXHR, textStatus, errorThrown) {
+				console.log("error", jqXHR, textStatus, errorThrown);
+				alert("Server Error. Please try again later.");
+			}
+		});
+		
+	}
+	
+	function examApplyJson() {
+		return JSON.stringify({
+			studentId : $.cookie("userId")
+		});
+	}
+	
+	function examCancelJson() {
+		return JSON.stringify({
+			applicantSeq : $("#optCancelButton").attr("applicantSeq")
+		});
+	}
+	
+	function optCancel() {
+		var examSeq = $("#optCancelButton").attr("examSeq");
+		$.ajax({
+			headers : getHeaders("Authorization", $.cookie("token")),
+			url : SERVER_URI + "/exams/" + examSeq + "/cancel",
+			type : "POST",
+			data : examCancelJson(),
+			dataType : "json",
+			contentType : "application/json; charset=UTF-8",
+			success : function(data, textStatus, jqXHR) {
+				if (data.head.status == 200) {
+					var $results = data.body.data;
+					alertError(data.head.status, data.head.message);
+					getTestTimeTable();
+					//console.log($results);
+				} else if (data.head.status == 204) {
+				} else if (data.head.status == 1005) {
+					//1005 : ClosedCancelExamException
+					alertError(data.head.status, data.head.message);
+					getTestTimeTable();
+				} else {
+					console.log("ERROR -----------\n ", data);
+					alertError(data.head.status, data.head.message);
+					if (data.head.status == 401) {
+						signout();
+					}
+				}
+			},
+			error : function(jqXHR, textStatus, errorThrown) {
+				console.log("error", jqXHR, textStatus, errorThrown);
+				alert("Server Error. Please try again later.");
+			}
+		});
+	}
+	
+	function getTestResults() {
+		$.ajax({
+			headers : getHeaders("Authorization", $.cookie("token")),
+			url : SERVER_URI + "/students/" + $.cookie("userId") + "/exams/results",
+			type : "GET",
+			dataType : "json",
+			contentType : "application/json; charset=UTF-8",
+			success : function(data, textStatus, jqXHR) {
+				if (data.head.status == 200) {
+					var $results = data.body.data;
+					//console.log($results);
+					
+					var html = "";
+					var printSubject = "";
+					$("#testResultUL").children().remove();
+					
+					$.each($results, function(index, item) {
+						html += "<li>";
+						html += "<b>" + item.term + " " + item.examType + "</b>";
+						html += "<span>" + item.examStartDate + " ~ " + item.examEndDate + "</span>";
+						if (item.filePath != "") {
+							html += "<i class=\"fa fa-download\" aria-hidden=\"true\" name=\"resultDownloadButton\" filePath=\"" + item.filePath + "\" fileName=\"" + item.fileName + "\"></i>";
+						}
+						html += "</li>";
+					});
+					$("#testResultUL").append(html);
+					$("#examResultsDiv").show();
+					
+					$("[name=resultDownloadButton]").on("click", function() {
+						fileDownload($(this).attr("filePath"), $(this).attr("fileName"));
+					});
+					
+				} else if (data.head.status == 204) {
+				} else {
+					console.log("ERROR -----------\n ", data);
+					//alertError(data.head.status, data.head.message);
+					COUNT_SERVER_ERROR++;
+					if (data.head.status == 401) {
+						signout();
+					}
+				}
+			},
+			error : function(jqXHR, textStatus, errorThrown) {
+				console.log("error", jqXHR, textStatus, errorThrown);
+				//alert("Server Error. Please try again later.");
+				COUNT_SERVER_ERROR++;
+			},
+			complete : function(jqXHR, textStatus) {
+				unBlockScreen();
+			}
+		});
+		
+	}
+	
+	</script>
+	
+</head>
+<body class="translation">
+	<h2 id="header">Pines International Academy<div class="bookmark bookmarkOff"><i class="fa fa-star-o" aria-hidden="true"></i></div></h2>
+    
+    <div id="tabMenu" class="wrap">
+        <ul>
+            <li ><a href="02_02_00_personal.html" data-i18n="common:personal"></a></li>
+            <li><a href="02_03_00_education.html" data-i18n="common:eduInfo" class="on"></a></li>
+            <li><a href="02_04_00_campus.html" data-i18n="common:campusInfo"></a></li>
+        </ul>
+    </div>
+	
+	<section>
+        
+		<div class="layoutBox" id="classTimetableDiv" style="display:none">
+			<h4><span data-i18n="education:classTimeTable"></span><div class="conBookmark bookmarkOff"><i class="fa fa-star-o" aria-hidden="true"></i></div></h4>
+			
+                <table class="tableT01">
+                    <tbody id="studyClassTbody">
+                        <tr>
+                            <th data-i18n="common:time"></th>
+                            <th data-i18n="education:classRoom"></th>
+                            <th data-i18n="education:subject"></th>
+                            <th data-i18n="education:teacher"></th>
+                        </tr>
+                    </tbody>
+                </table>
+
+		</div>
+		
+
+	   <div class="layoutBox" style="display:none">
+			<h4><span data-i18n="education:optionClass"></span><div class="conBookmark bookmarkOff"><i class="fa fa-star-o" aria-hidden="true"></i></div></h4>
+			
+            <div class="lineArea optionClass">
+                <p data-i18n="education:optionP"></p>
+                <span data-i18n="education:optionSpan"></span>
+           </div>
+
+		</div>            
+
+	   <div class="layoutBox" id="examNoticeDiv" style="display:none">
+			<h4><span data-i18n="education:testDate"></span><div class="conBookmark bookmarkOff"><i class="fa fa-star-o" aria-hidden="true"></i></div></h4>
+			
+            <div class="lineArea optionClass">
+                <!-- <p data-i18n="education:optionP"></p> -->
+                <!-- <span data-i18n="education:optionSpan"></span> -->
+                
+                <ul class="optionClassSchedule" id="testPlanUL">
+                    <li>
+                        <h5 id="testType"></h5>
+                        <p id="testDate"></p>
+                        <b data-i18n="education:testInfo_1"></b>
+                        <div data-i18n="education:testApply">시험신청</div>
+                    </li>
+                    
+                    <li>
+                        <h5 data-i18n="education:optionClassSchedule"></h5>
+                        <p data-i18n="common:date"></p>
+                        <b data-i18n="education:testInfo_2"></b>
+                        <div data-i18n="education:testApply">시험신청</div>
+                    </li>                    
+                </ul>
+           </div>
+
+		</div>  
+            
+
+	   <div class="layoutBox" id="examResultsDiv" style="display:none">
+			<h4><span data-i18n="education:testResult"></span><div class="conBookmark bookmarkOff"><i class="fa fa-star-o" aria-hidden="true"></i></div></h4>
+			
+            <ul class="testResult" id="testResultUL">
+            </ul>
+
+
+		</div>             
+            
+            
+
+		<div class="layoutBox" style="display:none">
+			<h4><span data-i18n="education:weekendStudy"></span><div class="conBookmark bookmarkOff"><i class="fa fa-star-o" aria-hidden="true"></i></div></h4>
+            
+            <div class="contentsArea">
+                <ul class="contentList">
+                    <li class="article">
+                        <a href="">
+                            <span data-i18n="education:weekendPriod"></span>
+                            <div class="right">
+                               <ul class="">
+                                    <li><span data-i18n="education:weekendPriodtime"></span></li>
+                                    <li><i class="fa fa-angle-right angle" aria-hidden="true"></i></li>
+                                </ul>                               
+                            </div>
+                        </a>
+                    </li>
+                    
+                    <li class="article">
+                        <a href="">
+                            <span data-i18n="education:weekendStudyTime"></span>
+                            <div class="right">
+                               <ul class="">
+                                    <li><span data-i18n="education:weekendStudyTime"></span></li>                        
+                                    <li><i class="fa fa-angle-right angle" aria-hidden="true"></i></li>
+                                </ul>                               
+                            </div>
+                        </a>
+                    </li>
+                    
+                    <li class="article">
+                        <a href="">
+                            <span data-i18n="education:weekendStudyList"></span>
+                            <div class="right">
+                               <ul class="">
+                                    <li><span data-i18n="common:download"></span></li>
+                                    <li><i class="fa fa-download" aria-hidden="true"></i></li>
+                                </ul>                               
+                            </div>
+                        </a>
+                    </li>                    
+                </ul>
+                
+		        <button class="basic" data-i18n="education:weekendStudyApply"></button>                
+            </div>
+        </div>     
+
+	</section>
+
+    <div class="loading_popup_over" style="display:none"></div>
+	<img src="img/loading.svg" class="loading" style="display:none"/>
+</body>
+</html>

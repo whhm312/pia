@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	
+    <meta name="viewport" content="width=device-width, initial-scale=1.0 ,maximum-scale=1.0, minimum-scale=1.0,user-scalable=no,target-densitydpi=medium-dpi">        
+	<script type="text/javascript" src="js/jquery.min.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/i18next/1.9.0/i18next.min.js"></script>
+	<script type="text/javascript" src="js/common.js" charset="utf-8"></script>
+	<script type="text/javascript" src="js/custom.js"></script>
+	<script type="text/javascript" src="js/pines.js"></script>
+	<link rel="stylesheet" href="css/font-awesome.min.css">
+	<link href="css/common.css" rel="stylesheet" type="text/css">	
+	<link href="css/reset.css" rel="stylesheet" type="text/css">
+	<link rel="icon" href="img/pia-icon.png" type="image/gif" sizes="48x48"/>
+	<script>
+	$(document).ready(function() {
+		if (!$.cookie("token")) {
+			alert("You need sign in.");
+			window.location.replace("/");
+			return false;
+		}
+		
+		changeLang($.cookie("changeLang"));
+		
+		$("#backButton").click(function() {
+			window.history.back(1);
+		});
+		
+		$("#requestChaningContractButton").click(function() {
+		});
+
+	});
+	</script>
+	
+</head>
+<body class="translation">
+	<h2 id="header">
+        <div class="prev"><i class="fa fa-chevron-left" aria-hidden="true" id="backButton" ></i></div>
+        <span data-i18n="contract:contractInfoChage"></span>
+    </h2>
+    
+
+	<section style="height: calc(100% - 111px);">
+		<div class="layoutBox">
+
+                <table class="columnx2">
+                    <tbody>
+                        <tr>
+                            <td>
+                                <input type="checkbox" value="" id="changeCourse"><label for="changeCourse"><span><span></span></span><b data-i18n="contract:changeCourse"></b></label>
+                            </td>
+                            <td> <input type="checkbox" value="" id="roomtype"><label for="roomtype"><span><span></span></span><b data-i18n="contract:roomType"></b></label></td>
+                        </tr>
+                        
+                        <tr>
+                            <td>
+                                <input type="checkbox" value="" id="extentionPeriod"><label for="extentionPeriod"><span><span></span></span><b data-i18n="contract:extentionPeriod"></b></label>
+                            </td>
+                            <td> <input type="checkbox" value="" id="cutPeriod"><label for="cutPeriod"><span><span></span></span><b data-i18n="contract:cutPeriod"></b></label></td>
+                        </tr>
+                        
+                        <tr>
+                            <td>
+                                <input type="checkbox" value="" id="delayContract"><label for="delayContract"><span><span></span></span><b data-i18n="contract:delayContract"></b></label>
+                            </td>
+                            <td> <input type="checkbox" value="" id="cancleContrac"><label for="cancleContrac"><span><span></span></span><b data-i18n="contract:cancleContrac"></b></label></td>
+                        </tr>                        
+                    </tbody>
+                </table>
+
+
+		</div>
+
+		        <button class="basic white" data-i18n="contract:contractInfoChage" id="requestChaningContractButton"></button>    
+                <p class="btnCaption wrap" data-i18n="contract:contractCpation"></p>
+        
+            </div>
+        </div>        
+        
+
+	</section>
+	
+	
+<!--
+	<div>
+	    <a href="javascript:void(0);" onclick="changeLang('en');">영어</a>
+	    <a href="javascript:void(0);" onclick="changeLang('ko');">한국어</a>
+	</div>
+-->
+
+</body>
+</html>

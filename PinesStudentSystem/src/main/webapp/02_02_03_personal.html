@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0 ,maximum-scale=1.0, minimum-scale=1.0,user-scalable=no,target-densitydpi=medium-dpi">
+	<script type="text/javascript" src="js/jquery.min.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/i18next/1.9.0/i18next.min.js"></script>
+	<script type="text/javascript" src="js/common.js" charset="utf-8"></script>
+	<script type="text/javascript" src="js/custom.js"></script>
+	<script type="text/javascript" src="js/jquery.cookie.js"></script>
+	<script type="text/javascript" src="js/pines.js"></script>
+	<link rel="stylesheet" href="css/font-awesome.min.css">
+	<link href="css/common.css" rel="stylesheet" type="text/css">
+	<link href="css/reset.css" rel="stylesheet" type="text/css">
+	<link rel="icon" href="img/pia-icon.png" type="image/gif" sizes="48x48"/>
+	<script>
+	$(document).ready(function() {
+		if (!$.cookie("token")) {
+			alert("You need sign in.");
+			window.location.replace("/");
+			return false;
+		}
+		
+		changeLang($.cookie("changeLang"));
+		
+		$("#backButton").click(function() {
+			window.history.back(1);
+		});
+		
+		$("#requestInfoChangeButton").click(function() {
+			//console.log(getJsonData());
+			if (!isValidate()) {
+				return false;
+			}
+
+			$.ajax({
+				headers : getHeaders("Authorization", $.cookie("token")),
+				url : SERVER_URI + "/students/"+$.cookie("userId")+"/basic/request",
+				type : "POST",
+				data : getJsonData(),
+				dataType : "json",
+				contentType : "application/json; charset=UTF-8",
+				beforeSend : function(jqXHR, settings) {
+					blockScreen();
+				},
+				success : function(data, textStatus, jqXHR) {
+					//console.log(data);
+					if (data.head.status == 200) {
+						alertSuccess();
+						window.location.replace("02_02_00_personal.html");
+					} else {
+						alertError(data.head.status, data.head.message);
+						console.log("ERROR -----------\n ", data);
+						if (data.head.status == 401) {
+							signout();
+						}
+					}
+				},
+				error : function(jqXHR, textStatus, errorThrown) {
+					console.log("error", jqXHR, textStatus, errorThrown);
+					alert("Server Error. Please try again later.");
+				},
+				complete : function(jqXHR, textStatus) {
+					unBlockScreen();
+				}
+			});
+			
+		});
+
+		function isValidate() {
+			var cntNoneVal = 4;
+			
+			if (!$("#nationality").val()) {
+				cntNoneVal--;
+			}
+			
+			if (!$("#name").val()) {
+				cntNoneVal--;
+			}
+/* 			
+			if (!$("#surname").val()) {
+				cntNoneVal--;
+			}
+			
+			if (!$("#givenNames").val()) {
+				cntNoneVal--;
+			} */
+			
+			if (!$("[name=sex]:checked").val()) {
+				cntNoneVal--;
+			}
+			
+			if (!$("#dateOfBirth").val()) {
+				cntNoneVal--;
+			}
+			
+			if (cntNoneVal < 1) {
+				return false;
+			}
+			
+			return true;
+		}
+		
+		function getJsonData() {
+			return JSON.stringify({
+				nationality : $("#nationality").val(),
+				name : $("#name").val(),
+				//passportSurname : $("#surname").val(),
+				//passportGivennames : $("#givenNames").val(),
+				sex : $("[name=sex]:checked").val(),
+				dateOfBirth : $("#dateOfBirth").val()
+			});
+		}
+		
+	});
+	</script>
+
+</head>
+
+<body class="translation">
+	<h2 id="header">
+		<div class="prev"><i class="fa fa-chevron-left" aria-hidden="true" id="backButton"></i></div>
+		<span data-i18n="common:basicInfoChange"></span>
+	</h2>
+
+
+	<section style="height: 100%;">
+		<div class="layoutBox">
+
+			<div class="contentsArea">
+
+				<ul>
+					<li>
+						<h5 data-i18n="common:nationality"></h5>
+						<select name="nationality" id="nationality">
+						   <option value="">Select</option>
+						   <option value="Chinese">Chinese</option>
+						   <option value="Colombian">Colombian</option>
+						   <option value="Japanese">Japanese</option>
+						   <option value="Korean">Korean</option>
+						   <option value="Mongolian">Mongolian</option>
+						   <option value="Saudi Arabian">Saudi Arabian</option>
+						   <option value="Taiwanese">Taiwanese</option>
+						   <option value="Thai">Thai</option>
+						   <option value="Vietnamese">Vietnamese</option>
+						</select>
+					</li>
+
+					<li>
+						<h5 data-i18n="common:name"></h5>
+						<input type="text" data-i18n="[placeholder]common:name" name="name" id="name"/>
+					</li>
+
+<!-- 
+					<li>
+						<h5 data-i18n="common:pefamliyName"></h5>
+						<input type="text" data-i18n="[placeholder]common:pefamliyName" name="surname" id="surname"/>
+					</li>
+
+					<li>
+						<h5 data-i18n="common:peName"></h5>
+						<input type="text" data-i18n="[placeholder]common:peName" name="givenNames" id="givenNames"/>
+					</li>
+ -->					
+					<li>
+						<h5 data-i18n="common:gender"></h5>
+						<input type="radio" name="sex" value="M" id="M"><label for="M"><span><span></span></span><b data-i18n="common:man"></b></label>
+						<input type="radio" name="sex" value="F" id="F"><label for="F"><span><span></span></span><b data-i18n="common:woman"></b></label>
+					</li>
+
+					<li>
+						<h5 data-i18n="common:birthday"></h5>
+						<div class="date">
+							<input type="text" data-i18n="[placeholder]common:birthdayForm" name="dateOfBirth" id="dateOfBirth" onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxlength="8">
+							<!-- <div class="input" data-i18n="common:birthday" name="dateOfBirth" id="dateOfBirth"></div>
+							<div class="btn"><i class="fa fa-calendar" aria-hidden="true"></i></div> -->
+						</div>					
+					</li>		
+				</ul>
+			</div>
+		</div>
+
+		<button class="basic white" data-i18n="common:basicInfoChangeButton" id="requestInfoChangeButton"></button>
+		<p class="btnCaption wrap" data-i18n="common:basicInfoChageCaption"></p>
+	</section>
+
+    <div class="loading_popup_over" style="display:none"></div>
+	<img src="img/loading.svg" class="loading" style="display:none"/>
+</body>
+
+</html>

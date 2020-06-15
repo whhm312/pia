@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	
+    <meta name="viewport" content="width=device-width, initial-scale=1.0 ,maximum-scale=1.0, minimum-scale=1.0,user-scalable=no,target-densitydpi=medium-dpi">        
+	<script type="text/javascript" src="js/jquery.min.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/i18next/1.9.0/i18next.min.js"></script>
+	<script type="text/javascript" src="js/common.js" charset="utf-8"></script>
+	<script type="text/javascript" src="js/custom.js"></script>
+	<link rel="stylesheet" href="css/font-awesome.min.css">
+	<link href="css/common.css" rel="stylesheet" type="text/css">	
+	<link href="css/reset.css" rel="stylesheet" type="text/css">
+	<link rel="icon" href="img/pia-icon.png" type="image/gif" sizes="48x48"/>
+	<script type="text/javascript" src="js/jquery.cookie.js"></script>
+	<script type="text/javascript">
+	$(document).ready(function() {
+		changeLang($.cookie("changeLang"));
+	});
+	</script>
+	
+</head>
+<body class="translation" style="background-color: #e9ebef;">
+	<h2 id="header"><span data-i18n="common:bookmark"></span><div class="bookmark bookmarkOn"><i class="fa fa-star-o" aria-hidden="true"></i></div></h2>
+	
+	<section>
+
+		<div class="wrap">
+			<div class="bookmarkInfo">
+                <i class="fa fa-star-o" aria-hidden="true"></i>
+                <p data-i18n="bookmark:bookmarkinfo"></p>
+                <ul>
+                    <li><span></span><p data-i18n="bookmark:bookmarkinfo01"></p></li>
+                    <li><span></span><p data-i18n="bookmark:bookmarkinfo02"></p></li>
+                    <li><span></span><p data-i18n="bookmark:bookmarkinfo03"></p></li>
+                </ul>
+            </div>
+		</div>
+
+	</section>
+    
+    <div class="popup_over"></div>
+    <div class="popup" style="">
+    
+        <h4 data-i18n="popup:notice"></h4>
+        <div class="popupContents">
+          
+            <ul class="listT01">
+                <li>
+                    <h5 data-i18n="common:data-date"></h5>
+                    <p data-i18n="common:data"></p>
+                </li>
+
+                <li>
+                    <h5 data-i18n="common:data-date"></h5>
+                    <p data-i18n="common:data"></p>
+                </li>
+
+                <li>
+                    <h5 data-i18n="common:data-date"></h5>
+                    <p data-i18n="common:data"></p>
+                </li>                
+            </ul>
+        </div>
+        
+        <div class="popupFooter">
+            <div class="popupFooter_check"><span></span><b style="font-weight: normal; " data-i18n="popup:neverShow"></b></div>
+            <div class="popupFooter_close" data-i18n="common:close"></div>
+        </div>
+    
+    </div>
+	
+	
+<!--
+	<div>
+	    <a href="javascript:void(0);" onclick="changeLang('en');">영어</a>
+	    <a href="javascript:void(0);" onclick="changeLang('ko');">한국어</a>
+	</div>
+-->
+
+</body>
+</html>

@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	
+    <meta name="viewport" content="width=device-width, initial-scale=1.0 ,maximum-scale=1.0, minimum-scale=1.0,user-scalable=no,target-densitydpi=medium-dpi">        
+	<script type="text/javascript" src="js/jquery.min.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/i18next/1.9.0/i18next.min.js"></script>
+	<script type="text/javascript" src="js/common.js" charset="utf-8"></script>
+	<script type="text/javascript" src="js/custom.js"></script>
+	<script type="text/javascript" src="js/jquery.cookie.js"></script>
+	<script type="text/javascript" src="js/pines.js"></script>
+	<link rel="stylesheet" href="css/font-awesome.min.css">
+	<link href="css/common.css" rel="stylesheet" type="text/css">	
+	<link href="css/reset.css" rel="stylesheet" type="text/css">
+	<link rel="icon" href="img/pia-icon.png" type="image/gif" sizes="48x48"/>
+	<script>
+	var COUNT_SERVER_ERROR = 0;
+	$(document).ready(function() {
+		if (!$.cookie("token")) {
+			alert("You need sign in.");
+			window.location.replace("/");
+			return false;
+		}
+		
+		changeLang($.cookie("changeLang"));
+		$("#spanLanguage").html(getLanguageInCookie());
+		
+		$(".bookmark").on("click", function() {
+			location.href="02_01_bookmark.html";
+		});
+		
+		$("#logoutButton").click(signout);
+		$("#saveButton").click(saveData);
+		$("#basicInfoChangeButton").click(function() {
+			window.location.href = "02_02_03_personal.html";
+		});
+
+		$(".contentsArea .contentList").hide();
+		getCurriculum();
+	});
+	
+	$(window).load(function(){
+		if (COUNT_SERVER_ERROR > 0) {
+			alert("Server Error. Please try again later.");
+		} else {
+			$(".contentsArea .contentList").show();
+		}
+	});
+	
+	function getCurriculum() {
+		$.ajax({
+			headers : getHeaders("Authorization", $.cookie("token")),
+			url : SERVER_URI + "/students/" + $.cookie("userId") + "/curriculum",
+			type : "GET",
+			dataType : "json",
+			contentType : "application/json; charset=UTF-8",
+			beforeSend : function(jqXHR, settings) {
+				blockScreen();
+			},
+			success : function(data, textStatus, jqXHR) {
+				if (data.head.status == 200) {
+					var $result = data.body.data;
+					//console.log($result);
+					
+					var html = "";
+					if ($result.startOfContractDate && $result.endOfContractDate && $result.weeks) {
+						html += $result.startOfContractDate;
+						html += " ~ ";
+						html += $result.endOfContractDate;
+						html += " (";
+						html += $result.weeks;
+						html += " Weeks)";
+						$("#studyPeriod").val(html);
+					}
+					
+					var course = $result.course;
+					if (course == "") {
+						course = $result.requestCourse;
+					}
+					
+					if (course && $result.term) {
+						html = $result.course;
+						html += " (";
+						html += $result.term;
+						html += " TH)";
+						$("#studyCourse").val(html);
+					}
+					
+					if ($result.level && $result.campus) {
+						html = $result.level;
+						html += " / ";
+						html += $result.campus;
+						$("#levelCampus").val(html);
+					}
+					
+					$("#classInfoDiv").show();
+					
+				} else if (data.head.status == 204) {
+					console.log("ERROR -----------\n ", data);
+				} else {
+					console.log("ERROR -----------\n ", data);
+					//alertError(data.head.status, data.head.message);
+					COUNT_SERVER_ERROR++;
+					if (data.head.status == 401) {
+						signout();
+					}
+				}
+			},
+			error : function(jqXHR, textStatus, errorThrown) {
+				console.log("error", jqXHR, textStatus, errorThrown);
+				//alert("Server Error. Please try again later.");
+				COUNT_SERVER_ERROR++;
+			},
+			complete : function(jqXHR, textStatus) {
+				setData();
+			}
+		});
+	}
+	
+	function setData() {
+		$.ajax({
+			headers : getHeaders("Authorization", $.cookie("token")),
+			url : SERVER_URI + "/students/" + $.cookie("userId"),
+			type : "GET",
+			dataType : "json",
+			contentType : "application/json; charset=UTF-8",
+			success : function(data, textStatus, jqXHR) {
+				if (data.head.status == 200) {
+					var $results = data.body.data;
+					//console.log($results);
+					
+					setSelecText("nationality", $results.nationality);
+					$("#name").val($results.name);
+					//$("#surname").val($results.passportSurname);
+					//$("#givenNames").val($results.passportGivennames);
+					setRadioValue("sex", $results.sex);
+					$("#dateOfBirth").text($results.dateOfBirth);
+					
+					$("#emergencyContact").val($results.emergencyContact);
+					setSelecValue("relationshipWithEmergencyContact", $results.relationshipWithEmergencyContact);
+					$("#localContact").val($results.localContact);
+					$("#email").val($results.email);
+					setSelecValue("messengerType", $results.messengerType);
+					$("#messengerId").val($results.messengerId);
+					$("#englishName").val($results.englishName);
+				} else if (data.head.status == 204) {
+					console.log("ERROR -----------\n ", data);
+				} else {
+					console.log("ERROR -----------\n ", data);
+					//alertError(data.head.status, data.head.message);
+					COUNT_SERVER_ERROR++;
+					if (data.head.status == 401) {
+						signout();
+					}
+				}
+				
+				setDisabled();
+				$("#personalInfoDiv").show();
+			},
+			error : function(jqXHR, textStatus, errorThrown) {
+				console.log("error", jqXHR, textStatus, errorThrown);
+				//alert("Server Error. Please try again later.");
+				COUNT_SERVER_ERROR++;
+			},
+			complete : function(jqXHR, textStatus) {
+				getEMoneyData();
+			}
+		});
+	}
+	
+	function setDisabled() {
+		//'readonly' 는 form 전송이 가능하지만,
+		//'disabled' 는 form 전송시 값이 전달되지 않는다.
+		
+		$("#nationality option").not(":selected").attr("disabled", "disabled");
+		$("#name").attr("disabled", "disabled");
+		//$("#surname").attr("disabled", "disabled");
+		//$("#givenNames").attr("disabled", "disabled");
+		$("#sex").attr("disabled", "disabled");
+		$("#dateOfBirth").attr("disabled", "disabled");
+	}
+
+	function getEMoneyData() {
+		$.ajax({
+			headers : getHeaders("Authorization", $.cookie("token")),
+			url : SERVER_URI + "/pos/students/" + $.cookie("userId") + "/balnace",
+			type : "GET",
+			dataType : "json",
+			contentType : "application/json; charset=UTF-8",
+			success : function(data, textStatus, jqXHR) {
+				if (data.head.status == 200) {
+					var $results = data.body.data;
+					//console.log($results);
+					
+					$("#eMoney").text($results.balance);
+					$("#historyDownloadButton").click(eMoneyHistoryDownload);
+					
+				} else if (data.head.status == 204) {
+					console.log("ERROR -----------\n ", data);
+				} else {
+					console.log("ERROR -----------\n ", data);
+					//alertError(data.head.status, data.head.message);
+					COUNT_SERVER_ERROR++;
+					if (data.head.status == 401) {
+						signout();
+					}
+				}
+				
+				$("#eMoneyDiv").show();
+			},
+			error : function(jqXHR, textStatus, errorThrown) {
+				console.log("error", jqXHR, textStatus, errorThrown);
+				//alert("Server Error. Please try again later.");
+				COUNT_SERVER_ERROR++;
+			},
+			complete : function(jqXHR, textStatus) {
+				unBlockScreen();
+			}
+		});
+	}
+	
+	function eMoneyHistoryDownload() {
+		var url = SERVER_URI + "/pos/students/" + $.cookie("userId") + "/statement/download";
+		window.location = url;
+	}
+	
+	function saveData() {
+		//console.log(getJsonData());
+
+		$.ajax({
+			headers : getHeaders("Authorization", $.cookie("token")),
+			url : SERVER_URI + "/students/"+$.cookie("userId")+"/extra",
+			type : "PUT",
+			data : getJsonData(),
+			dataType : "json",
+			contentType : "application/json; charset=UTF-8",
+			beforeSend : function(jqXHR, settings) {
+				blockScreen();
+			},
+			success : function(data, textStatus, jqXHR) {
+				//console.log(data);
+				if (data.head.status == 200) {
+					alertSuccess();
+					window.location.replace("02_02_00_personal.html");
+				} else if (data.head.status == 204) {
+					console.log("ERROR -----------\n ", data);
+				} else {
+					console.log("ERROR -----------\n ", data);
+					//alertError(data.head.status, data.head.message);
+					COUNT_SERVER_ERROR++;
+					if (data.head.status == 401) {
+						signout();
+					}
+				}
+			},
+			error : function(jqXHR, textStatus, errorThrown) {
+				console.log("error", jqXHR, textStatus, errorThrown);
+				//alert("Server Error. Please try again later.");
+				COUNT_SERVER_ERROR++;
+			},
+			complete : function(jqXHR, textStatus) {
+				unBlockScreen();
+			}
+		});
+	}
+	
+	function getJsonData() {
+		return JSON.stringify({
+			emergencyContact : $("#emergencyContact").val(),
+			relationshipWithEmergencyContact : $("#relationshipWithEmergencyContact").val(),
+			localContact : $("#localContact").val(),
+			email : $("#email").val(),
+			messengerType : $("#messengerType option:selected").val(),
+			messengerId : $("#messengerId").val(),
+			englishName : $("#englishName").val()
+		});
+	}
+	</script>
+</head>
+<body class="translation">
+	<h2 id="header">Pines International Academy<div class="bookmark bookmarkOff"><i class="fa fa-star-o" aria-hidden="true"></i></div></h2>
+    
+    <div id="tabMenu" class="wrap">
+        <ul>
+            <li ><a href="02_02_00_personal.html" data-i18n="common:personal" class="on"></a></li>
+            <li><a href="02_03_00_education.html" data-i18n="common:eduInfo"></a></li>
+            <li><a href="02_04_00_campus.html" data-i18n="common:campusInfo"></a></li>
+        </ul>
+    </div>
+	
+	<section>
+
+		<div class="layoutBox" id="classInfoDiv" style="display:none">
+			<h4><span data-i18n="education:classInfo"></span><div class="conBookmark bookmarkOff"><i class="fa fa-star-o" aria-hidden="true"></i></div></h4>
+			
+			<div class="contentsArea">
+				<ul>
+					<li>
+						<h5 data-i18n="education:classPeriod"></h5>
+                        <div class="lineInput">
+                            <ul>
+                                <li><i class="fa fa-calendar" aria-hidden="true"></i><input class="lineInput" type="text" id="studyPeriod" readOnly/></li>
+                            </ul>
+                        </div>
+					</li>
+
+					<li>
+						<h5 data-i18n="education:course"></h5>
+						<input class="line" type="text" id="studyCourse" readOnly/>
+                    </li>			
+                    
+					<li>
+						<h5 data-i18n="education:levelCampus"></h5>
+						<input class="line" type="text" id="levelCampus" readOnly/>
+                    </li>	                    
+					<!-- 
+					<li>
+						<h5 data-i18n="education:optionClass"></h5>
+                        <div class="lineInput">
+                            <ul>
+                                <li><i class="fa fa-clock-o" aria-hidden="true"></i><input class="lineInput" type="text" data-i18n="[placeholder]education:optionTime"/></li>
+                                <li><i class="fa fa-calendar" aria-hidden="true"></i><input class="lineInput" type="text" data-i18n="[placeholder]education:optionClassName"/></li>
+                            </ul>
+                            
+                            <ul>
+                                <li><i class="fa fa-clock-o" aria-hidden="true"></i><input class="lineInput" type="text" data-i18n="[placeholder]education:optionTime"/></li>
+                                <li><i class="fa fa-calendar" aria-hidden="true"></i><input class="lineInput" type="text" data-i18n="[placeholder]education:optionClassName"/></li>
+                            </ul>                            
+                        </div>
+                    </li>
+                     -->	           
+			</div>
+        
+		</div>
+        
+        		
+		<div class="layoutBox" id="personalInfoDiv" style="display:none">
+			<h4><span data-i18n="common:personalInfo"></span><div class="conBookmark bookmarkOff"><i class="fa fa-star-o" aria-hidden="true"></i></div></h4>
+			
+			<div class="contentsArea">
+				<ul>
+					<li>
+						<h5 data-i18n="common:nationality"></h5>
+						<select name="nationality" id="nationality">
+						   <option value="Chinese">Chinese</option>
+						   <option value="Colombian">Colombian</option>
+						   <option value="Japanese">Japanese</option>
+						   <option value="Korean">Korean</option>
+						   <option value="Mongolian">Mongolian</option>
+						   <option value="Saudi Arabian">Saudi Arabian</option>
+						   <option value="Taiwanese">Taiwanese</option>
+						   <option value="Thai">Thai</option>
+						   <option value="Vietnamese">Vietnamese</option>
+						</select>
+					</li>
+
+					<li>
+						<h5 data-i18n="common:name"></h5>
+						<input type="text" data-i18n="[placeholder]common:name" name="name" id="name"/>						
+					</li>				
+
+	<!-- 
+					<li>
+						<h5 data-i18n="common:pefamliyName"></h5>
+						<input type="text" data-i18n="[placeholder]common:pefamliyName" name="surname" id="surname"/>					
+					</li>	
+
+					<li>
+						<h5 data-i18n="common:peName"></h5>
+						<input type="text" data-i18n="[placeholder]common:peName" name="givenNames" id="givenNames"/>					
+					</li>	
+	 -->
+					<li>
+						<h5 data-i18n="common:gender"></h5>
+						<input type="radio" name="sex" value="M" id="sex"><label for="man"><span><span></span></span><b data-i18n="common:man"></b></label>		
+						<input type="radio" name="sex" value="F" id="sex"><label for="woman"><span><span></span></span><b data-i18n="common:woman"></b></label>						
+					</li>		
+
+					<li>
+						<h5 data-i18n="common:birthday"></h5>
+						<div class="date">
+							<div class="input" data-i18n="common:birthday" id="dateOfBirth"></div>
+							<div class="btn"><i class="fa fa-calendar" aria-hidden="true"></i></div>
+						</div>					
+					</li>				
+				</ul>	
+                
+                <button class="line bmt bmb" data-i18n="common:basicInfoChange" id="basicInfoChangeButton"></button>
+                
+				<ul>
+					<li>
+						<h5 data-i18n="common:EmergencyContact"></h5>
+						<input type="text" data-i18n="[placeholder]common:EmergencyContact" name="emergencyContact" id="emergencyContact"/>		
+					</li>
+					
+					<li>
+						<h5 data-i18n="common:relationship"></h5>
+						<select name="EmergencyContact" name="relationshipWithEmergencyContact" id="relationshipWithEmergencyContact">
+						   <option value="family">Family</option>
+						   <option value="spouse">Spouse</option>
+						</select>					
+					</li>	
+
+					<li>
+						<h5 data-i18n="common:locationContact"></h5>
+						<input type="text" data-i18n="[placeholder]common:locationContact" name="localContact" id="localContact"/>					
+					</li>	
+
+					<li>
+						<h5 data-i18n="common:Email"></h5>
+						<input type="text" data-i18n="[placeholder]common:Email" name="email" id="email"/>					
+					</li>	
+
+					<li>
+						<h5 data-i18n="common:massenger"></h5>
+						<select name="massenger" style="margin-bottom: 5px" name="messengerType" id="messengerType">
+							<option value="kakao">Kakao Talk</option>
+							<option value="line">Line</option>
+							<option value="wechat">WeChat</option>
+							<option value="viber">Viber</option>
+							<option value="skype">Skype</option>
+							<option value="facebook">Facebook Messenger</option>
+							<option value="zalo">Zalo</option>						
+						</select>		
+						<input type="text" data-i18n="[placeholder]common:massenger" name="messengerId" id="messengerId"/>	
+					</li>		
+					
+					<li>
+						<h5 data-i18n="common:englishName"></h5>
+						<input type="text" data-i18n="[placeholder]common:englishName" name="englishName" id="englishName"/>					
+					</li>	
+				
+			
+				</ul>	
+                
+                <button class="basic" data-i18n="common:save" id="saveButton"></button>                
+                
+
+			</div>
+
+		</div>
+		
+		<div class="layoutBox" style="display:none">
+			<h4><span data-i18n="common:contractInfo"></span><div class="conBookmark bookmarkOff"><i class="fa fa-star-o" aria-hidden="true"></i></div></h4>
+			
+			<div class="contentsArea">
+				<ul>
+					<li>
+						<h5 data-i18n="contract:coursePeriodRoom"></h5>
+						<input class="line" type="text" data-i18n="[placeholder]contract:coursePeriodRoom"/>
+					</li>
+
+					<li>
+						<h5 data-i18n="contract:entranceInfo"></h5>
+                        <div class="lineInput">
+                            <ul>
+                                <li><i class="fa fa-plane" aria-hidden="true"></i><input class="lineInput" type="text" data-i18n="[placeholder]contract:airplan"/></li>
+                                <li><i class="fa fa-calendar" aria-hidden="true"></i><input class="lineInput" type="text" data-i18n="[placeholder]common:date"/></li>
+                                <li><i class="fa fa-clock-o" aria-hidden="true"></i><input class="lineInput" type="text" data-i18n="[placeholder]common:time"/></li>
+                            </ul>
+                        </div>
+                    </li>				
+
+					<li>
+						<h5 data-i18n="contract:leaveInfo"></h5>
+                        <div class="lineInput">
+                            <ul>
+                                <li><i class="fa fa-plane" aria-hidden="true"></i><input class="lineInput" type="text" data-i18n="[placeholder]contract:airplan"/></li>
+                                <li><i class="fa fa-calendar" aria-hidden="true"></i><input class="lineInput" type="text" data-i18n="[placeholder]common:date"/></li>
+                                <li><i class="fa fa-clock-o" aria-hidden="true"></i><input class="lineInput" type="text" data-i18n="[placeholder]common:time"/></li>
+                            </ul>
+                        </div>
+                    </li>	
+
+					<li>
+						<h5 data-i18n="contract:pickup"></h5>
+                        <div class="lineInput">
+                            <ul>
+                                <li><i class="fa fa-car" aria-hidden="true"></i><input class="lineInput" type="text" data-i18n="[placeholder]common:yes"/></li>
+                                <li><i class="fa fa-map-marker" aria-hidden="true"></i><input class="lineInput" type="text" data-i18n="[placeholder]common:loaction"/></li>
+                                <li><i class="fa fa-comment" aria-hidden="true"></i><input class="lineInput" type="text" data-i18n="[placeholder]common:etc"/></li>
+                            </ul>
+                        </div>
+					</li>	
+
+					<li>
+						<h5 data-i18n="contract:agency"></h5>
+						<input class="line" type="text" data-i18n="[placeholder]contract:agency"/>
+					</li>			
+
+					<li>
+                        <div class="lineInput">
+                            <ul>
+                                <li><i class="fa fa-user-o" aria-hidden="true"></i><input class="lineInput" type="text" data-i18n="[placeholder]contract:chargeStaff"/></li>
+                                <li><i class="fa fa-phone" aria-hidden="true"></i><input class="lineInput" type="text" data-i18n="[placeholder]common:contact"/></li>
+                            </ul>
+                        </div>
+					</li>	                    
+				</ul>	
+                
+                <button class="line" data-i18n="contract:contractInfoChage"></button>                
+			</div>
+        
+		</div>
+        
+		<div class="layoutBox" style="display:none">
+			<h4><span data-i18n="contract:deposit"></span><span class="line"></span><span data-i18n="contract:deposit"></span><div class="conBookmark bookmarkOff">
+                <ul class="">
+                    <li><i class="fa fa-angle-down down" aria-hidden="true"></i></li>
+                    <li><i class="fa fa-star-o" aria-hidden="true"></i></li>
+                </ul>        
+            </div></h4>
+        </div>
+        
+		<div class="layoutBox" id="eMoneyDiv" style="display:none">
+			<h4><span data-i18n="contract:privateSafe"></span><span class="line"></span><span id="eMoney">0</span>
+            <div class="right" style="float: right;">
+               <ul class="">
+                    <li><i class="fa fa-download right" aria-hidden="true" id="historyDownloadButton"></i></li>
+                </ul>                               
+            </div>
+			
+			<div class="conBookmark bookmarkOff">
+                <ul class="">
+                    <li><i class="fa fa-angle-down down" aria-hidden="true"></i></li>
+                    <li><i class="fa fa-star-o" aria-hidden="true"></i></li>
+                </ul>        
+            </div>
+            </h4>
+        </div>
+        
+		<div class="layoutBox">
+			<h4><span data-i18n="siteSetting:siteSetting"></span><div class="conBookmark bookmarkOff"><i class="fa fa-star-o" aria-hidden="true"></i></div></h4>
+            
+            <div class="contentsArea">
+                <ul class="contentList">
+                    <li class="article">
+                        <a href="02_02_04_language.html">
+                            <span data-i18n="siteSetting:language"></span>
+                            <div class="right">
+                               <ul class="">
+                                    <li><span id="spanLanguage">한국어</span></li>
+                                    <li><i class="fa fa-angle-right angle" aria-hidden="true"></i></li>
+                                </ul>                               
+                            </div>
+                        </a>
+                    </li>
+                    
+                    <li class="article">
+                        <a href="02_02_02_pw.html">
+                            <span data-i18n="siteSetting:pwChange"></span>
+                            <div class="right">
+                               <ul class="">
+                                    <li><i class="fa fa-angle-right angle" aria-hidden="true"></i></li>
+                                </ul>                               
+                            </div>
+                        </a>
+                    </li>
+                    <!-- 
+                    <li class="article">
+                        <a href="">
+                            <span data-i18n="siteSetting:notificationList"></span>
+                            <div class="right">
+                               <ul class="">
+                                    <li><span data-i18n="siteSetting:totalDown"></span></li>
+                                    <li><i class="fa fa-download" aria-hidden="true"></i></li>
+                                </ul>                               
+                            </div>
+                        </a>
+                    </li>
+                     -->                    
+                </ul>
+                
+		        <button class="basic gray" data-i18n="siteSetting:logout" id="logoutButton"></button>                
+            </div>
+        </div>        
+        
+
+	</section>
+
+    <div class="loading_popup_over" style="display:none"></div>
+	<img src="img/loading.svg" class="loading" style="display:none"/>
+</body>
+</html>

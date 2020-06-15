@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0 ,maximum-scale=1.0, minimum-scale=1.0,user-scalable=no,target-densitydpi=medium-dpi">
+	<script type="text/javascript" src="js/jquery.min.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/i18next/1.9.0/i18next.min.js"></script>
+	<script type="text/javascript" src="js/common.js" charset="utf-8"></script>
+	<script type="text/javascript" src="js/custom.js"></script>
+	<link rel="stylesheet" href="css/font-awesome.min.css">
+	<link href="css/common.css" rel="stylesheet" type="text/css">
+	<link href="css/reset.css" rel="stylesheet" type="text/css">
+	<link rel="icon" href="img/pia-icon.png" type="image/gif" sizes="48x48"/>
+
+</head>
+
+<body class="translation">
+	<h2 id="header">
+		<div class="prev"><i class="fa fa-chevron-left" aria-hidden="true"></i></div>
+		<span data-i18n="campus:tourPlan"></span>
+	</h2>
+
+
+	<section style="">
+
+
+		<div class="layoutBox">
+
+			<h4><span data-i18n="campus:tourPlan"></span></h4>
+
+			<div class="contentsArea">
+
+				<ul>
+					<li>
+						<h5 data-i18n="campus:location"></h5>
+						<select name="location">
+						   <option data-i18n="campus:anotherLocation" value="korea"></option>
+						   <option data-i18n="common:japan" value="japan"></option>
+						</select>
+					</li>
+					
+					<li>
+						<h5 data-i18n="campus:datailLocation"></h5>
+						<input type="text" data-i18n="[placeholder]campus:datailLocation" />
+					</li>					
+
+					<li>
+						<h5>
+							<p data-i18n="campus:transfer"></p>
+							<p class="btnCaption red" data-i18n="campus:transferCaption"></p>
+						</h5>
+
+						<input type="radio" name="tranfer" value="" id="van"><label for="van" class="disable"><span><span></span></span><b data-i18n="campus:van"></b><b data-i18n="campus:departureTime4" class="radioCaption hidden"></b></label> <br>
+						<input type="radio" name="tranfer" id="bus" value=""><label class="disable" for="bus"><span><span></span></span><b data-i18n="campus:bus"></b><b data-i18n="campus:departureTime11" class="radioCaption hidden"></b></label> <br>
+						<input type="radio" name="tranfer" id="contsult" checked="checked" value=""><label for="contsult"><span><span></span></span><b data-i18n="campus:contsult"></b></label>
+					</li>
+
+					<li>
+						<h5>
+							<p data-i18n="campus:departureDay"></p>
+							<p class="btnCaption red" data-i18n="campus:departureDayCaption"></p>
+						</h5>
+						<div class="date">
+							<div class="input" data-i18n="campus:departureDay"></div>
+							<div class="btn"><i class="fa fa-calendar" aria-hidden="true"></i></div>
+						</div>
+					</li>
+
+					<li>
+						<h5 data-i18n="campus:returnDaty"></h5>
+						<div class="date">
+							<div class="input" data-i18n="campus:departureDay"></div>
+							<div class="btn"><i class="fa fa-calendar" aria-hidden="true"></i></div>
+						</div>
+						<select name="consultRequest" style="margin-top: 3px;">
+						   <option data-i18n="campus:consultRequest" value="korea"></option>
+						   <option data-i18n="common:japan" value="japan"></option>
+						</select>
+					</li>
+
+					<li>
+						<h5 data-i18n="campus:contactNumber"></h5>
+						<input type="text" data-i18n="[placeholder]campus:contactNumber" />
+					</li>
+
+					<li>
+						<h5 data-i18n="campus:participant"></h5>
+						<div class="date">
+							<div class="input" data-i18n="campus:participant"></div>
+							<div class="btn"><i class="fa fa-search" aria-hidden="true"></i></div>
+						</div>
+						<table class="tableT01">
+							<colgroup>
+								<col width="50px">
+								<col width="*">
+								<col width="60px">
+								<col width="50px">
+							</colgroup>
+							<tbody>
+								<tr>
+									<th data-i18n="campus:number"></th>
+									<th class="center" data-i18n="common:name"></th>
+									<th data-i18n="campus:roomNumber"></th>
+									<th data-i18n="campus:del"></th>
+								</tr>
+
+								<tr>
+									<td class="center">1</td>
+									<td>원빈</td>
+									<td class="center">203</td>
+									<td class="center"><i class="fa fa-minus-circle" aria-hidden="true"></i></td>
+								</tr>
+
+								<tr>
+									<td class="center">2</td>
+									<td>강동원</td>
+									<td class="center">301</td>
+									<td class="center"><i class="fa fa-minus-circle" aria-hidden="true"></i></td>
+								</tr>
+
+							</tbody>
+						</table>
+					</li>
+				</ul>
+				<button class="basic" data-i18n="campus:accept"></button>
+			</div>
+		</div>
+		</div>
+
+		<table class="btnCaptionTable">
+			<tbody>
+				<tr>
+					<th>1.</th>
+					<td data-i18n="campus:tourCaption1"></td>
+				</tr>
+				<tr>
+					<th>2.</th>
+					<td data-i18n="campus:tourCaption2"></td>
+				</tr>
+				<tr>
+					<th>3.</th>
+					<td data-i18n="campus:tourCaption3"></td>
+				</tr>
+				<tr>
+					<th>4.</th>
+					<td data-i18n="campus:tourCaption4"></td>
+				</tr>
+				<tr>
+					<th>5.</th>
+					<td data-i18n="campus:tourCaption5"></td>
+				</tr>
+			</tbody>
+		</table>
+
+		<div class="wrap">
+			<button class="line bmt" data-i18n="campus:tourTimetable"></button>
+		</div>
+		</div>
+		</div>
+
+
+	</section>
+
+
+	<!--
+	<div>
+	    <a href="javascript:void(0);" onclick="changeLang('en');">영어</a>
+	    <a href="javascript:void(0);" onclick="changeLang('ko');">한국어</a>
+	</div>
+-->
+
+</body>
+
+</html>

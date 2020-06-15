@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	
+    <meta name="viewport" content="width=device-width, initial-scale=1.0 ,maximum-scale=1.0, minimum-scale=1.0,user-scalable=no,target-densitydpi=medium-dpi">        
+	<script type="text/javascript" src="js/jquery.min.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/i18next/1.9.0/i18next.min.js"></script>
+	<script type="text/javascript" src="js/common.js" charset="utf-8"></script>
+	<script type="text/javascript" src="js/custom.js"></script>
+	<script type="text/javascript" src="js/pines.js"></script>
+	<script type="text/javascript" src="js/md5.min.js"></script>
+	<script type="text/javascript" src="js/base64.js"></script>
+	<script type="text/javascript" src="js/jquery.cookie.js"></script>
+	<link rel="stylesheet" href="css/font-awesome.min.css">
+	<link href="css/common.css" rel="stylesheet" type="text/css">	
+	<link href="css/reset.css" rel="stylesheet" type="text/css">
+	<link rel="icon" href="img/pia-icon.png" type="image/gif" sizes="48x48"/>
+	<script>
+	$(document).ready(function() {
+		var cookieChangeLang = $.cookie("changeLang");
+		if (!cookieChangeLang) {
+			cookieChangeLang = "en";
+		}
+		changeLang(cookieChangeLang);
+		
+		if ($.cookie("userId") && $.cookie("md5Password")) {
+			autoSigninDisplay();
+			autoSignin();
+		} else {
+			resetLoginCookie();
+			resetPopupCookie();
+			$("#donotShowEmergencyButton").click(donotShowEmergency);
+		}
+	});
+
+	$(window).load(function() {
+		$("#signinButton").click(signin);
+		$("#signinButton").show();
+	});
+	
+	function resetPopupCookie() {
+		$.cookie("showEmergencyContactPopup", true, {expires : 1});
+	}
+	
+	function resetLoginCookie() {
+		$.removeCookie("token", { path: "/" });
+		$.removeCookie("userId", { path: "/" });
+		$.removeCookie("name", { path: "/" });
+		$.removeCookie("branchSeq", { path: "/" });
+		$.removeCookie("nationalitySeq", { path: "/" });
+		$.removeCookie("languageSeq", { path: "/" });
+		$.cookie("showEmergencyContactPopup", true);
+		$.removeCookie("md5Password", { path: "/" });
+	}
+	
+	function signin() {
+		//console.log(getJsonData());
+		$.ajax({
+			headers : "",
+			url : SERVER_URI + "/login",
+			type : "POST",
+			data : getJsonData(),
+			dataType : "json",
+			contentType : "application/json; charset=UTF-8",
+			beforeSend : function(jqXHR, settings) {
+				blockScreen();
+			},
+			success : function(data, textStatus, jqXHR) {
+				if (data.head.status == 200) {
+					var $result = data.body.data;
+					//console.log($result);
+					
+					if ($result.isBlocked) {
+						$("#popupT02").css("display", "");
+						$(".popup_over").css("display", "");
+					} else {
+						var token_id = $("#username").val();
+						var token_pw = md5($("#password").val());
+						var token = "Basic " + Base64.encode(token_id + ":" + token_pw);
+						setCookies(token_id, token, $result);
+						//setIosCookies(token_id, token, $result);
+
+						if ($("#rememberMe").prop("checked")) {
+							//$.cookie("md5Password", token_pw, {expires : expireDate});
+							setCookie("md5Password", token_pw, 365);
+						} else {
+							//$.cookie("md5Password", "");
+							$.removeCookie("md5Password", { path: "/" });
+						}
+
+						isTraveling = $result.isTraveling; 
+						emergencyContacts = $result.emergencyContacts;
+						notices = $result.notices;
+						alarms = $result.alarms;
+						
+						nativeCall($("#username").val());
+					}
+				} else if (data.head.status == 204) {
+					alert("Unknown Student Number.");
+					$("#password").val("");
+				} else if (data.head.status == 10006) {
+					alert(data.head.message);
+					$("#password").val("");
+					console.log("ERROR -----------\n ", data.head.status, data.head.message);
+				} else {
+					alert("[" + data.head.status + "] " + data.head.message);
+					$("#password").val("");
+					console.log("ERROR -----------\n ", data.head.status, data.head.message);
+				}
+			},
+			error : function(jqXHR, textStatus, errorThrown) {
+				console.log("error", jqXHR, textStatus, errorThrown);
+				alert("Server Error. Please try again later.");
+			},
+			complete : function(jqXHR, textStatus) {
+				unBlockScreen();	
+			}
+		});
+	}
+	
+	function getJsonData() {
+		return JSON.stringify({
+			studentId : $("#username").val(),
+			password : md5($("#password").val())
+		});
+	}
+	
+	function autoSigninDisplay() {
+		$("#username").hide();
+		$("#password").hide();
+		$("#rememberMe").hide();
+		$("#signinButton").hide();
+		$(".singIn > hr").hide();
+		$(".SignINpw").hide();
+	}
+
+	function setCookies(userId, token, $result) {
+		var expireDate = 1;
+		if ($("#rememberMe").prop("checked")) {
+			expireDate = 365;
+		}
+		
+		$.cookie("userId", userId, {expires : expireDate});
+		$.cookie("token", token, {expires : expireDate});
+		$.cookie("name", $result.name, {expires : expireDate});
+		$.cookie("branchSeq", $result.branchSeq, {expires : expireDate});
+		$.cookie("nationalitySeq", $result.nationalitySeq, {expires : expireDate});
+		$.cookie("languageSeq", $result.languageSeq, {expires : expireDate});
+		setLanguage($result.language);
+	}
+	
+	function setIosCookies(userId, token, $result) {
+		var expireDate = 1;
+		if ($("#rememberMe").prop("checked")) {
+			expireDate = 365;
+		}
+		
+		setCookie("userId", userId, expireDate);
+		setCookie("token", token, expireDate);
+		setCookie("name", $result.name, expireDate);
+		setCookie("branchSeq", $result.branchSeq, expireDate);
+		setCookie("nationalitySeq", $result.nationalitySeq, expireDate);
+		setCookie("languageSeq", $result.languageSeq, expireDate);
+		setLanguage($result.language);
+	}
+	
+	function setCookie( cookieName, cookieValue, expireDate ) {
+		var today = new Date();
+		today.setDate( today.getDate() + parseInt( expireDate ) );
+		document.cookie = cookieName + "=" + escape( cookieValue ) + "; path=/; expires=" + today.toGMTString() + ";";
+	}
+	
+	var emergencyContacts;
+	var notices;
+	var alarms;
+	var isTraveling;
+	function autoSignin() {
+		//console.log(getJsonData());
+		$.ajax({
+			headers : "",
+			url : SERVER_URI + "/login/auto",
+			type : "POST",
+			data : getAutoLoginJsonData(),
+			dataType : "json",
+			contentType : "application/json; charset=UTF-8",
+			beforeSend : function(jqXHR, settings) {
+				blockScreen();
+			},
+			success : function(data, textStatus, jqXHR) {
+				if (data.head.status == 200) {
+					var $result = data.body.data;
+					//console.log($result);
+					if ($result.isBlocked) {
+						$("#popupT02").css("display", "");
+						$(".popup_over").css("display", "");
+					} else {
+						var token_id = $.cookie("userId");
+						var token_pw = $.cookie("md5Password");
+						var token = "Basic " + Base64.encode(token_id + ":" + token_pw);
+						setCookies(token_id, token, $result);
+						//setIosCookies(token_id, token, $result);
+						
+						isTraveling = $result.isTraveling; 
+						emergencyContacts = $result.emergencyContacts;
+						notices = $result.notices;
+						alarms = $result.alarms;
+
+						nativeCall($.cookie("userId"));
+					}
+				} else if (data.head.status == 204) {
+					alert("Unknown Student Number.");
+					$("#password").val("");
+				} else if (data.head.status == 10006) {
+					alert(data.head.message);
+					$("#password").val("");
+					console.log("ERROR -----------\n ", data.head.status, data.head.message);
+				} else {
+					alert("[" + data.head.status + "] " + data.head.message);
+					$("#password").val("");
+					console.log("ERROR -----------\n ", data.head.status, data.head.message);
+				}
+			},
+			error : function(jqXHR, textStatus, errorThrown) {
+				console.log("error", jqXHR, textStatus, errorThrown);
+				alert("Server Error. Please try again later.");
+			},
+			complete : function(jqXHR, textStatus) {
+				unBlockScreen();
+			}
+		});
+	}
+	
+	function getAutoLoginJsonData() {
+		return JSON.stringify({
+			studentId : $.cookie("userId"),
+			password : $.cookie("md5Password")
+		});
+	}
+	
+	function nativeCall(studentId) {
+		try {
+			NativeCall("login:"+studentId);
+		} catch (e) {
+			afterSuccessedLogin();
+		}
+	}
+	
+	function getTokken(mobilekind, id, token) {
+		if (!id) {
+			alert("Lack of Student Id information.\n id : " + id);
+			afterSuccessedLogin();	
+			return false;
+		}
+		
+		var url = SERVER_URI + "/push/students/" + id + "/device";
+		$.ajax({
+			headers : getHeaders("Authorization", $.cookie("token")),
+			url : url,
+			type : "POST",
+			data : getSaveDeviceJsonData(mobilekind, token),
+			dataType : "json",
+			contentType : "application/json; charset=UTF-8",
+			beforeSend : function(jqXHR, settings) {
+				blockScreen();
+			},
+			success : function(data, textStatus, jqXHR) {
+				afterSuccessedLogin();	
+			},
+			error : function(xhr, status, error) {
+				var err = eval("(" + xhr.responseText + ")");
+				if (err.Message) {
+					 alert("Error : " + err.Message);
+				} else {
+					alert("It is Failed Register your device.");
+				}
+			},
+			complete : function(jqXHR, textStatus) {
+				unBlockScreen();		
+			}
+		});		  
+	} 
+
+	function getHeaders(key, value) { 
+	    var headers = {};
+	    headers[key] = value;
+	    return headers;
+	} 
+
+	function getSaveDeviceJsonData(os, token) {
+		return JSON.stringify({
+			os : os,
+			token : token
+		});
+	}
+	
+	function afterSuccessedLogin() {
+		if (isTraveling) {
+			gridEmergencyContact(emergencyContacts, notices);
+		} else {
+			if (alarms && alarms.length > 0) {
+				gridReceiveMessages();
+			} else if (notices && notices.length > 0) {
+				gridNotices(notices);
+			} else {
+				window.location.replace("02_03_00_education.html");
+			}
+		}
+	}
+	
+	function gridReceiveMessages() {
+		if ($(alarms).length) {
+			var height = (window.innerHeight / 2) + "px";
+			$("#messageDiv").children(".popupContents").css({"overflow-y":"scroll", "min-height":"100px", "max-height":height});
+			$(".popup_over").css("display", "");
+			$("#messageUl").empty();
+			
+        	var html = "";
+        	html += "<li style=\"text-align: center\">";
+        	html += "<h5 style=\"padding-top:0; padding-bottom: 10px\"><b>Message will not show, if you click the message.</b></h5>";
+        	html += "</li>";
+			$("#messageUl").append(html);
+			
+			$.each($(alarms), function(index, item) {
+				html = "";
+				html += "<li onclick=\"readMessage(this);\">";
+				html += "<h5 style=\"padding-top:0\" alarmSeq=\"" + item.alarmSeq + "\">" + item.sendDate + "</h5>";
+				html += "<p>" + item.message + " " + item.sender + "</p>";
+				html += "</li>";
+				$("#messageUl").append(html);
+			});
+			
+			$("#messageDiv").css("display", "");
+		}
+
+		$("#closeMessageDivButton").click(function() {
+			$("#messageDiv").css("display", "none");
+			$("#messageUl").empty();
+			
+			if ($(notices).length < 1) {
+				$(".popup_over").css("display", "none");
+				window.location.replace("02_03_00_education.html");
+			} else {
+				gridNotices($(notices));
+			}
+		});	
+	}
+	
+	function gridNotices($notices) {
+		var html = "";
+		$.each($notices, function(index, item) {
+			html = "";
+			html += "<div class=\"popup\" style=\"min-height: 300px; display:none;\" name=\"popupNotices\">";
+			html += "<h4>" + item.title + "</h4>";
+			html += "<div class=\"popupContents\">";
+			html += "<p>" + item.content + "</p>";
+			html += "<p class=\"date\"><span data-i18n=\"popup:registration\"></span><b>" + item.registerDate + " (" + item.writer + ")</b></p>";
+			html += "</div>";
+			html += "<div class=\"popupFooter\">";
+			html += "<div class=\"popupFooter_close\" data-i18n=\"common:close\" name=\"closePopupNoticesButton\"></div>";
+			html += "</div>";
+			html += "</div>";
+			
+			$(".popup_over").after(html);
+		});
+		
+		if ($notices.length > 0) {
+			$("[name=popupNotices]").i18n();
+			$(".popup_over").css("display", "");
+			$("[name=popupNotices]").css("display", "");
+		}
+		
+		$("[name=closePopupNoticesButton]").click(function() {
+			$(this).parent().parent().css("display", "none");
+			$(this).parent().parent().remove();
+			
+			if (isLastNoticePopup()) {
+				$(".popup_over").css("display", "none");
+				window.location.replace("02_03_00_education.html");
+			}
+		});
+	}
+	
+	function isLastNoticePopup() {
+		if ($("[name=closePopupNoticesButton]").length == 0) {
+			return true;
+		}
+		return false;
+	}
+
+	function gridEmergencyContact($contacts, $notice) {
+		if ($.cookie("showEmergencyContactPopup") == "true") {
+			$("#emergencyContacts").empty();
+			$.each($contacts, function(index, item) {
+				var html = "";
+				html += "<li>";
+				html += "<a href=\"tel:" + item.contact + "\">";
+				html += "<h5>" + item.name + " (" + item.nationality + ")</h5>";
+				html += "<p>" + item.contact + "</p>";
+				html += "</a>";
+				html += "</li>";
+				$("#emergencyContacts").append(html);
+			});
+			
+			unBlockScreen();
+			
+			$("body").scrollTop(0);
+			$(".popup_over").css("display", "");
+			$("#popupEmergencyContacts").css("display", "");
+			
+			$("#closeEmergencyContactPopupButton").click(function() {
+				$("#popupEmergencyContacts").css("display", "none");
+				
+				if (alarms && alarms.length > 0) {
+					gridReceiveMessages();
+				} else if ($notice && $notice.length > 0) {
+					gridNotices($notice);
+				} else {
+					$(".popup_over").css("display", "none");
+					window.location.replace("02_03_00_education.html");
+				}
+			});	
+			
+		}
+	}
+	
+	function blockScreen() {
+		$(".loading_popup_over").css("display", "");
+		$(".loading").css("display", "");
+	}
+
+	function unBlockScreen() {
+		$(".loading_popup_over").css("display", "none");
+		$(".loading").css("display", "none");
+	}
+
+	function setLanguage(languageName) {
+		if (languageName == "Korean") {
+			$.cookie("changeLang", "ko");
+		} else if (languageName == "English") {
+			$.cookie("changeLang", "en");
+		} else if (languageName == "Japanese") {
+			$.cookie("changeLang", "jp");
+		} else if (languageName == "Chinese") {
+			$.cookie("changeLang", "cn");
+		} else if (languageName == "Vietnamese") {
+			$.cookie("changeLang", "dn");
+		}
+	}
+	
+	function donotShowEmergency() {
+		if ($("#donotShowEmergencyButton").attr("class") == "on") {
+			$("#donotShowEmergencyButton").attr("class", "");
+			$.cookie("showEmergencyContactPopup", true, {expires : 1});
+		} else {
+			$("#donotShowEmergencyButton").attr("class", "on");
+			$.cookie("showEmergencyContactPopup", false, {expires : 1});
+		}
+	}
+	
+	function readMessage(el) {
+		if ($(el).children("h5").find("i").length < 1) {
+			changeMessageStatus(el);
+		}
+	}
+	
+	function changeMessageStatus(el) {
+		var alarmSeq = $(el).children("h5").attr("alarmSeq");
+		if (!alarmSeq) {
+			alert("You cannot change status of the message. Please try next time.");
+			return false;
+		}
+
+		var studentId = $.cookie("userId");
+		if (!studentId) {
+			alert("You need sign in.");
+			window.location.replace("/");
+		}
+		
+		var url = SERVER_URI + "/students/" + studentId + "/alarms/" + alarmSeq + "/read";
+		$.ajax({
+			headers : getHeaders("Authorization", $.cookie("token")),
+			url : url,
+			type : "POST",
+			dataType : "json",
+			contentType : "application/json; charset=UTF-8",
+			beforeSend : function(jqXHR, settings) {
+				blockScreen();
+			},
+			success : function(data, textStatus, jqXHR) {
+				var addButton = "&nbsp;&nbsp;<i class=\"fa fa-check-square-o\" aria-hidden=\"true\"></i> <font style=\"background-color:yellow\">Read</font>";
+				$(el).children("h5").append(addButton);
+			},
+			error : function(xhr, status, error) {
+				var err = eval("(" + xhr.responseText + ")");
+				if (err.Message) {
+					 alert("Error : " + err.Message);
+				} else {
+					alert("It is Failed Change status of the message.");
+				}
+			},
+			complete : function(jqXHR, textStatus) {
+				unBlockScreen();		
+			}
+		});	
+	}
+	</script>
+</head>
+<body class="translation" style="background-color: #e9ebef;">
+	
+	<div id="singIn">
+		<h2 id="signinLogo"><img src="img/logo.png" /></h2>
+		<hr />
+		<input type="text" data-i18n="[placeholder]signin:id" id="username" value=""/>	
+		<input type="password" data-i18n="[placeholder]signin:pw" id="password" value=""/>
+		<input type="checkbox" name="rememberMe" value="rememberMe" id="rememberMe"><label for="rememberMe"><span><span></span></span><b>Remember me</b></label>
+		<button type="button" class="basic" data-i18n="signin:signIn" id="signinButton" style="display: none;"></button>
+		<p class="SignINpw" data-i18n="signin:SignINpw"></p>
+	</div>
+		<p class="copyright">COPYRIGHT 2017 PINES ONLINE INBON KIM ALL RIGHT RESERVED</p>	
+
+
+    <div class="popup_over" style="display:none"></div>
+    
+    <!-- Popup Emergency contacts -->
+    <div class="popup" id="popupEmergencyContacts" style="display:none">
+    
+        <h4 data-i18n="popup:tourContact"></h4>
+        <div class="popupContents">
+            <ul class="listT01" id="emergencyContacts">
+            </ul>
+        </div>
+        
+        <div class="popupFooter">
+            <div class="popupFooter_check"><span id="donotShowEmergencyButton"></span><b style="font-weight: normal; " data-i18n="popup:dontShow"></b></div>
+            <div class="popupFooter_close" data-i18n="common:close" id="closeEmergencyContactPopupButton"></div>
+        </div>
+    
+    </div>
+    <div class="popup" id="messageDiv" style="display:none">
+        <h4>Receive Messages</h4>
+        <div class="popupContents" >
+            <ul class="listT01" id="messageUl">
+            </ul>
+        </div>
+        <div class="popupFooter">
+            <div class="popupFooter_close" data-i18n="common:close" id="closeMessageDivButton"></div>
+        </div>
+    </div>
+        
+    <!-- Block student sign in -->
+    <div id="popupT02" style="display:none">
+      <h4><i class="fa fa-exclamation-triangle" aria-hidden="true"></i><p data-i18n="popup:essential"></p></h4>
+        <div>
+        <p data-i18n="popup:blockMessage1"></p>
+        <p data-i18n="popup:blockMessage2"></p><br>
+        <p data-i18n="popup:blockMessage3"></p>
+        <p data-i18n="popup:blockMessage4"></p>
+        </div>
+    </div>    
+        
+    <div class="loading_popup_over" style="display:none"></div>
+	<img src="img/loading.svg" class="loading" style="display:none"/>
+</body>
+
+</html>

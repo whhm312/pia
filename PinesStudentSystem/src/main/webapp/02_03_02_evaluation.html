@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	
+    <meta name="viewport" content="width=device-width, initial-scale=1.0 ,maximum-scale=1.0, minimum-scale=1.0,user-scalable=no,target-densitydpi=medium-dpi">        
+	<script type="text/javascript" src="js/jquery.min.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/i18next/1.9.0/i18next.min.js"></script>
+	<script type="text/javascript" src="js/common.js" charset="utf-8"></script>
+	<script type="text/javascript" src="js/custom.js"></script>
+	<script type="text/javascript" src="js/jquery.cookie.js"></script>
+	<script type="text/javascript" src="js/pines.js"></script>
+	<link rel="stylesheet" href="css/font-awesome.min.css">
+	<link href="css/common.css" rel="stylesheet" type="text/css">	
+	<link href="css/reset.css" rel="stylesheet" type="text/css">
+	<link rel="icon" href="img/pia-icon.png" type="image/gif" sizes="48x48"/>
+	<script>
+	$(document).ready(function() {
+		if (!$.cookie("token")) {
+			alert("You need sign in.");
+			window.location.replace("/");
+			return false;
+		}
+		
+		changeLang($.cookie("changeLang"));
+		$("#spanLanguage").html(getLanguageInCookie());
+		
+		$(".bookmark").on("click", function() {
+			location.href="02_01_bookmark.html";
+		});
+		
+		$("#saveButton").click(saveData);
+		$("#saveButton").attr("disabled", "disabled");
+		
+		setData();
+		
+	});
+
+	function saveData() {
+		if (!vaildate()) {
+			return false;
+		}
+		
+		$.ajax({
+			headers : getHeaders("Authorization", $.cookie("token")),
+			url : "http://localhost:12001/students/" + $.cookie("userId") + "/evaluations/1/evaluate",
+			type : "POST",
+			dataType : "json",
+			data : getJsonData(),
+			contentType : "application/json; charset=UTF-8",
+			beforeSend : function(jqXHR, settings) {
+				blockScreen();
+			},
+			success : function(data, textStatus, jqXHR) {
+				console.log(data);
+			},
+			error : function(jqXHR, textStatus, errorThrown) {
+				console.log("error", jqXHR, textStatus, errorThrown);
+				alert("Server Error. Please try again later.");
+			},
+			complete : function(jqXHR, textStatus) {
+				unBlockScreen();
+			}
+		});
+	}
+	
+	function vaildate() {
+		var optionType = "";
+		var isValid = true;
+		$.each($(".testReview .myReview"), function(idx, val) {
+			optionType = $(this).attr("optionType");
+			if (optionType == "OPINION") {
+				//console.log($(this).children("textarea").val());
+				if ($(this).children("textarea").val() == "" || !$(this).children("textarea").val()) {
+					isValid = false;
+					$(this).children("textarea").css("border-color", "red");
+				} else {
+					$(this).children("textarea").css("border-color", "");
+				}
+			} else {
+				//console.log($(this).children("button").filter(".my-review__modify__star__content__value--active").val());
+				if (!$(this).children("button").filter(".my-review__modify__star__content__value--active").val()) {
+					isValid = false;
+					$(this).css("border", "1px solid red");
+				} else {
+					$(this).css("border", "");
+				}
+			}
+		});
+		return isValid;
+	}
+	
+	function getJsonData() {
+		var paramItems = new Array();
+		var item;
+		var opinion, optionType = "";
+		var scheduleSeq, optionSeq, evaluationItemSeq = 0; 
+		var arrayIndex = 0;
+		
+		$.each($(".testReview .myReview"), function(idx, val) {
+			optionType = $(this).attr("optionType");
+			evaluationItemSeq = $(this).attr("evaluationItemSeq");
+			scheduleSeq = $(this).attr("scheduleSeq");
+			if (optionType == "OPINION") {
+				opinion = $(this).children("textarea").val(); //opinion
+			} else {
+				optionSeq = $(this).children("button").filter(".my-review__modify__star__content__value--active").val(); //seq
+			}
+			
+			item = {
+					"evaluationItemSeq" : evaluationItemSeq,
+					"scheduleSeq" : scheduleSeq,
+					"optionType" : optionType,
+					"optionSeq" : optionSeq,
+					"opinion" : opinion
+			};
+			paramItems[arrayIndex++] = item;
+			
+			opinion = "";
+			optionType = "";
+			optionSeq = 0;
+			scheduleSeq = 0;
+			evaluationItemSeq = 0;
+		});
+		
+		console.log(JSON.stringify({
+			evaluationSeq : $("#evaluationSeq").val(),
+			items : paramItems
+		}));
+		return JSON.stringify({
+			evaluationSeq : $("#evaluationSeq").val(),
+			items : paramItems
+		});
+	}
+	
+	function setData() {
+		$.ajax({
+			headers : getHeaders("Authorization", $.cookie("token")),
+			url : "http://localhost:12001/students/" + $.cookie("userId") + "/evaluations/recent/evaluation",
+			type : "GET",
+			dataType : "json",
+			contentType : "application/json; charset=UTF-8",
+			beforeSend : function(jqXHR, settings) {
+				blockScreen();
+			},
+			success : function(data, textStatus, jqXHR) {
+				if (data.head.status == 200) {
+					var $results = data.body.data;
+					$("#classPeriod").text($results.classPeriod);
+					$("#classLevel").text($results.level);
+					$("#classCount").text("Group Class : " + $results.groupClassCnt + ", 1on1 Class : " + $results.personalClassCnt);
+					$("#evaluationSeq").val($results.evaluationSeq);
+					
+					//$("#evaluationItemUl").empty();
+					var html = "";
+					$.each($results.items, function(idx, val) {
+						console.log(idx, val);
+						html += "<li>";
+						html += "	<div>";
+						html += "		<b>" + val.itemContent + "</b>";
+						html += "	</div>";
+						html += "	<i class=\"fa fa-angle-down\" aria-hidden=\"true\"></i>";
+						
+						html += "	<div class=\"testReview\" style=\"display: none;\">";
+						$.each($results.classes, function(classIdx, classVal) {
+							if (classVal.teacherName) {
+								html += "		<div class=\"myReview\" optionType=\"" + val.optionType + "\" evaluationItemSeq=\"" + val.evaluationItemSeq + "\" scheduleSeq=\"" + classVal.scheduleSeq + "\" >";
+								html += "			<h5><b>" + classVal.subject + "</b><span>" + classVal.teacherName + "</span></h5>";
+								if (val.optionType == "OPINION") {
+									html += "			<textarea id=\"opinion\"></textarea>";
+								} else {
+									$.each(val.options, function(optionIdx, optionVal) {
+										html += "			<button class=\"my-review__modify__star__content__value js_reviewModifyStarBtn\" type=\"button\" value=\"" + optionVal.optionSeq + "\" data-text=\"" + optionVal.optionContent + "\"></button> " + optionVal.optionContent + " <br>";
+										//console.log(optionIdx, optionVal);
+									});
+								}
+								html += "			<span class=\"my-review__modify__star__content__status js_reviewModifyStatus\"></span>";
+								html += "		</div>";
+							}
+						});
+						html += "	</div>";
+						html += "</li>";
+					});
+					$("#evaluationItemUl").append(html);
+					
+					setEffects();
+					$("#saveButton").removeAttr("disabled");
+					
+				} else if (data.head.status == 204) {
+					console.log("ERROR -----------\n ", data);
+				} else {
+					console.log("ERROR -----------\n ", data);
+					alertError(data.head.status, data.head.message);
+					if (data.head.status == 401) {
+						signout();
+					}
+				}
+			},
+			error : function(jqXHR, textStatus, errorThrown) {
+				console.log("error", jqXHR, textStatus, errorThrown);
+				alert("Server Error. Please try again later.");
+			},
+			complete : function(jqXHR, textStatus) {
+				unBlockScreen();
+			}
+		});
+	}
+	
+	function setEffects() {
+		$(".my-review__modify__star__content__value").click(setOptionCssToggle);
+		$("#evaluationItemUl li div").click(setItemCssToggle);
+		$("#evaluationItemUl li i").click(setItemButtonCssToggle);
+	}
+
+	function setOptionCssToggle() {
+		for (var i = 0; i < $(this).parent().children("button").length; i++) {
+			$(this).parent().children("button").removeClass("my-review__modify__star__content__value--active");
+		}
+		$(this).addClass("my-review__modify__star__content__value--active");
+	}
+	
+	function setItemCssToggle() {
+		if($(this).hasClass("active")) {
+			$(this).removeClass("active");
+		} else {
+			$(this).addClass("active");
+		}
+		
+		var $next_I = $(this).next("i");
+		if($next_I.hasClass("fa-angle-up")) {
+			$next_I.removeClass("fa-angle-up");
+			$next_I.addClass("fa-angle-down");
+		} else {
+			$next_I.removeClass("fa-angle-down");
+			$next_I.addClass("fa-angle-up");
+		}
+		
+		var $next_Div = $next_I.next("div");
+		$next_Div.toggle();
+	}	
+	
+	function setItemButtonCssToggle() {
+		var $this_I = $(this);
+		if($this_I.hasClass("fa-angle-up")) {
+			$this_I.removeClass("fa-angle-up");
+			$this_I.addClass("fa-angle-down");
+		} else {
+			$this_I.removeClass("fa-angle-down");
+			$this_I.addClass("fa-angle-up");
+		}
+		
+		var $next_Div = $(this).next("div");
+		$next_Div.toggle();
+	}
+	</script>
+	
+</head>
+<body class="translation">
+	<h2 id="header">
+        <div class="prev"><i class="fa fa-chevron-left" aria-hidden="true"></i></div>
+        <span data-i18n="education:classEvaluation"></span>
+    </h2>
+    
+
+	<section style="">
+		<div class="layoutBox">
+            
+			<h4><span data-i18n="education:classInfo"></span></h4>            
+            
+            <div class="contentsArea">
+
+  				<ul>
+					<li>
+						<h5 data-i18n="education:classPeriod"></h5>
+                        <div class="lineInput">
+                        <i class="fa fa-calendar" aria-hidden="true"></i><span class="basic" id="classPeriod"></span>		
+                        </div>
+					</li>
+
+					<li>
+						<h5 data-i18n="education:classLevel"></h5>
+                        <div class="lineInput">
+                        <span class="basic" id="classLevel"></span>		
+                        </div>
+					</li>	
+
+					<li>
+						<h5 data-i18n="education:classNum"></h5>
+                        <div class="lineInput">
+                        <span class="basic" id="classCount"></span>		
+                        </div>				
+					</li>				
+				</ul>	
+            </div>
+		</div>
+
+		<div class="layoutBox">
+			<h4><span data-i18n="education:classEvaluation"></span></h4>
+						
+			<ul class="testResult" id="evaluationItemUl">
+			</ul>
+			<button class="basic" data-i18n="common:save" id="saveButton"></button>          
+		</div>   
+	</section>
+	<input type="hidden" id="evaluationSeq"/>
+	
+	
+<!--
+	<div>
+	    <a href="javascript:void(0);" onclick="changeLang('en');">영어</a>
+	    <a href="javascript:void(0);" onclick="changeLang('ko');">한국어</a>
+	</div>
+-->
+
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	
+    <meta name="viewport" content="width=device-width, initial-scale=1.0 ,maximum-scale=1.0, minimum-scale=1.0,user-scalable=no,target-densitydpi=medium-dpi">        
+	<script type="text/javascript" src="js/jquery.min.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/i18next/1.9.0/i18next.min.js"></script>
+	<script type="text/javascript" src="js/common.js" charset="utf-8"></script>
+	<script type="text/javascript" src="js/custom.js"></script>
+	<script type="text/javascript" src="js/jquery.cookie.js"></script>
+	<script type="text/javascript" src="js/pines.js"></script>
+	<link rel="stylesheet" href="css/font-awesome.min.css">
+	<link href="css/common.css" rel="stylesheet" type="text/css">	
+	<link href="css/reset.css" rel="stylesheet" type="text/css">
+	<link rel="icon" href="img/pia-icon.png" type="image/gif" sizes="48x48"/>
+	<script>
+	$(document).ready(function() {
+		if (!$.cookie("token")) {
+			alert("You need sign in.");
+			window.location.replace("/");
+			return false;
+		}
+		
+		changeLang($.cookie("changeLang"));
+
+		$("#backButton").click(function() {
+			window.location.href = "02_02_00_personal.html";
+			//window.history.back(1);
+		});
+		
+		setData();
+	});
+	
+	function setData() {
+		$.ajax({
+			headers : getHeaders("Authorization", $.cookie("token")),
+			url : SERVER_URI + "/conditions/languages",
+			type : "GET",
+			dataType : "json",
+			contentType : "application/json; charset=UTF-8",
+			beforeSend : function(jqXHR, settings) {
+				blockScreen();
+			},
+			success : function(data, textStatus, jqXHR) {
+				if (data.head.status == 200) {
+					var $results = data.body.data;
+					//console.log($results);
+					var html = "";
+					$(".contentList").empty();        
+					$.each($results, function(index, item) {
+						if (item.name == "Taiwanese") {
+							return true;
+						}
+						
+						html = "";
+						html += "<li class=\"article\">";
+						html += "<a href=\"javascript:updateLanguage(" + item.seq +",'"+ item.name + "')\">";
+						html += "<span>" + item.name + "</span>";
+						html += "<div class=\"right\">";
+						html += "<ul class=\"\">";
+						html += "<li><i class=\"fa fa-angle-right angle\" aria-hidden=\"true\"></i></li>";
+						html += "</ul>";
+						html += "</div>";
+						html += "</a>";
+						html += "</li>";
+						
+						$(".contentList").append(html);
+					});
+
+				} else if (data.head.status == 204) {
+					console.log("ERROR -----------\n ", data);
+				} else {
+					console.log("ERROR -----------\n ", data);
+					alertError(data.head.status, data.head.message);
+					if (data.head.status == 401) {
+						signout();
+					}
+				}
+			},
+			error : function(jqXHR, textStatus, errorThrown) {
+				console.log("error", jqXHR, textStatus, errorThrown);
+				alert("Server Error. Please try again later.");
+			},
+			complete : function(jqXHR, textStatus) {
+				unBlockScreen();
+			}
+		});
+	}
+	
+	function updateLanguage(languageSeq, languageName) {
+		if (!languageSeq) {
+			return false;
+		}
+		
+		$.ajax({
+			headers : getHeaders("Authorization", $.cookie("token")),
+			url : SERVER_URI + "/students/"+$.cookie("userId")+"/language/change",
+			type : "POST",
+			data : getJsonData(languageSeq),
+			dataType : "json",
+			contentType : "application/json; charset=UTF-8",
+			beforeSend : function(jqXHR, settings) {
+				blockScreen();
+			},
+			success : function(data, textStatus, jqXHR) {
+				//console.log(data);
+				if (data.head.status == 200) {
+					$.cookie("languageSeq", languageSeq);
+					setLanguage(languageName);
+					changeLang($.cookie("changeLang"));
+					alertSuccess();
+				} else {
+					console.log("ERROR -----------\n ", data);
+					alertError(data.head.status, data.head.message);
+					if (data.head.status == 401) {
+						signout();
+					}
+				}
+				unBlockScreen();
+			},
+			error : function(jqXHR, textStatus, errorThrown) {
+				console.log("error", jqXHR, textStatus, errorThrown);
+				alert("Server Error. Please try again later.");
+				unBlockScreen();
+			}
+		});
+	}
+
+	function getJsonData(varLanguageSeq) {
+		return JSON.stringify({
+			languageSeq : varLanguageSeq
+		});
+	}
+	
+	</script>
+</head>
+<body class="translation">
+	<h2 id="header">
+        <div class="prev"><i class="fa fa-chevron-left" aria-hidden="true" id="backButton"></i></div>
+        <span data-i18n="siteSetting:languageChange"></span>
+    </h2>
+	
+	<section style="height: calc(100% - 111px);">
+		<div class="layoutBox">
+		
+            <div class="contentsArea">
+                <ul class="contentList">
+                </ul>
+            </div>
+        </div>        
+	</section>
+
+    <div class="loading_popup_over" style="display:none"></div>
+	<img src="img/loading.svg" class="loading" style="display:none"/>
+</body>
+</html>

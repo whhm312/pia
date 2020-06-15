@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Pines Portal</title>
+<link rel="shortcut icon" href="/custom/img/icon-152.png">
+<style>
+.dataTable {
+	border-collapse: collapse;
+	width: 820px;
+}
+
+.dataTable th, .dataTable td {
+	border: 1px solid black;
+	text-align: center
+}
+
+.searchTable {
+	border-collapse: collapse;
+}
+
+.searchTable th, .searchTable td {
+	border-bottom: 1px solid black;
+	height: 40px;
+	padding-left: 10px;
+}
+</style>
+</head>
+<body>
+	<h2 style="width: 820px" align="center"><u>Searching Going Out Students</u></h2>
+	<form name="searchForm" id="searchForm">
+	<table class="searchTable">
+		<tr>
+			<td width="200px"></td>
+			<td width="600px" align="right">
+				<span align="center" id="todayH2">Oct 16 2018 21:00</span>
+				<button type="button" id="searchButton" style="height: 30px; width: 100px; font-size: 18px">Search</button>
+				<!-- <button type="button" id="downloadButton" style="height: 30px; width: 100px">Excel Download</button> -->
+			</td>
+		</tr>
+		<tr>
+			<td>Branch</td>
+			<td id="branchTd">
+			</td>
+		</tr>
+		<tr>
+			<td>Campus</td>
+			<td id="campusTd">
+			</td>
+		</tr>
+		<tr>
+			<td>Entrance</td>
+			<td>
+				<select name="entranceSeq" style="height: 30px; width: 200px; font-size: 18px">
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td>Student's Room</td>
+			<td>
+				<input type="text" id="outingRoom" style="height: 30px; width: 200px; font-size: 18px">
+			</td>
+		</tr>
+		<tr>
+			<td>Student's Name</td>
+			<td>
+				<input type="hidden" id="searchType" value="STUDENT_NAME">
+				<input type="text" id="searchValue" style="height: 30px; width: 400px; font-size: 18px">
+			</td>
+		</tr>
+	</table>
+	</form>
+	<br>
+	<hr width="820px" align="left">
+	<hr width="820px" align="left">
+	<br>
+	
+	<table class="dataTable">
+		<tr>
+			<td colspan="4" style="border: 0px solid black; text-align: right" id="totalCountTd">Total Count : 0</td>
+		</tr>
+		<tr>
+			<th width="10%">No</th>
+			<th width="20%">Room</th>
+			<th width="50%">Name</th>
+			<th width="30%">Out Time</th>
+		</tr>
+	</table>
+	
+	<table class="dataTable" id="dataArea">
+	</table>
+	<script src="/js/jquery.js"></script>
+	<script type="text/javascript">
+	jQuery(document).ready(function() {
+		$("#searchButton").click(getSearchList);
+		$("#todayH2").text(getToday());
+		getSearcBranches();
+	});
+	
+	function getToday() {
+		var dt = new Date();
+		var date = dt.toISOString().substring(8,10) + "/" + dt.toISOString().substring(5,7)+ "/" + dt.toISOString().substring(0,4);
+		var time = dt.toTimeString().substring(0,5)
+		return date + " " + time + " " + addWeekendsCss(getWeek(date));
+	}
+	
+	var serverDomain = "http://192.168.31.203:12001";
+
+	function getSearcBranches() {
+		var url = serverDomain + "/conditions/branches";
+		callAjax(url, gridSearchBranches);
+	}    
+	
+	function gridSearchBranches(response) {
+		var $data = response;
+		//console.log($data);
+		
+		$("#branchTd").empty();
+				
+		var html = "";
+		$.each($data, function(index, item) {
+			html += "<input type=\"radio\" name=\"branch\" value=\"" + item.seq + "\"> " + item.name + "&nbsp&nbsp";
+		});
+		$("#branchTd").append(html);
+		
+		$("[name=branch]").click(getSearchCampuses);
+	}    
+	
+	function getSearchCampuses() {
+		var branchSeq = $("[name='branch']:checked").val();
+		var url = serverDomain + "/conditions/" + branchSeq + "/entrances/campuses";
+		callAjax(url, gridSearchCampuses);
+	}
+	
+	function gridSearchCampuses(response) {
+		var $data = response;
+		//console.log($data);
+		
+		$("#campusTd").empty();
+		
+		var html = "";
+		$.each($data, function(index, item) {
+			html += "<input type=\"radio\" name=\"campus\" value=\"" + item.seq + "\"> " + item.name + "&nbsp&nbsp";
+		});
+		$("#campusTd").append(html);
+		
+		$("[name=campus]").click(getSearchEntrances);
+	}    
+	
+	function getSearchEntrances() {
+		var branchSeq = $("[name='branch']:checked").val();
+		var campusSeq = $("[name='campus']:checked").val();
+		var url = serverDomain + "/conditions/" + branchSeq + "/campuses/" + campusSeq + "/entrances";
+		callAjax(url, gridSearchEntrances);
+	}    
+	
+	function gridSearchEntrances(response) {
+		var $data = response;
+		//console.log($data);
+		
+		var html = "";
+		html += "<option value=\"\">All</option>";
+		$.each($data, function(index, item) {
+			html += "<option value=\"" + item.seq + "\">" + item.name + "</option>";
+		});
+		$("[name=entranceSeq]").append(html);
+	}
+	
+	function getSearchList() {
+		var branchSeq = $("[name='branch']:checked").val();
+		var campusSeq = $("[name='campus']:checked").val();
+		
+		if (!branchSeq || branchSeq < 0) {
+			alert("Please Choose Branch.");
+			return false;
+		}
+		if (!campusSeq || campusSeq < 0) {
+			alert("Please Choose Campus.");
+			return false;
+		}
+		
+        var url = serverDomain + "/branches/" + branchSeq + "/campuses/" + campusSeq + "/entrances/records?" + getParams();
+        callAjax(url, gridList);
+	}
+	
+	function getParams(type) {
+		var paramEntranceSeq = $("#entranceSeq").val() ? $("#entranceSeq").val() : 0;
+		var paramSearchSection = "OUTING";
+		var paramSearchType = $("#searchType").val();
+		var paramSearchValue = $.trim($("#searchValue").val());
+		var paramRoom = $("#outingRoom").val();
+		
+		var params = {
+				entranceSeq : paramEntranceSeq,
+				searchSection : paramSearchSection,
+				searchType : paramSearchType,
+				searchValue : encodeURI(paramSearchValue),
+				searchRoom : paramRoom,
+				isUnlimitedSearch : true,
+				isExcelDownload : type == "excel"
+		};
+		
+		return $.param(params);
+	}	
+	
+	function gridList(response) {
+		var $data = response;
+		console.log($data);
+		
+		$("#todayH2").text(getToday());
+		$("#dataArea").empty();
+		
+		var html = "";
+		var totalCount = $data.length;
+		$("#totalCountTd").text(" Total Count : " + totalCount);
+		if (!totalCount || totalCount < 1) {
+			html = "<tr><td colspan=\"4\">None.</td></tr>";
+			$("#dataArea").append(html);
+		} else {
+			$.each($data, function(index, item) {
+				html = "<tr>";
+				html += "<td width=\"10%\">" + totalCount-- + "</td>";
+				html += "<td width=\"20%\">" + item.room + "</td>";
+				html += "<td width=\"50%\">" + item.studentName + " (" + item.nationality + ")" + "</td>";
+				if (item.outDate && item.outDate.length > 11) {
+					html += "<td width=\"30%\">" + item.outDate.substring(11, 16) + "</td>";
+				} else {
+					html += "<td width=\"30%\">" + item.outDate + "</td>";
+				}
+				$("#dataArea").append(html);
+			});
+		}
+	}
+
+	function getWeek(date) {
+		var week = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+		var dayOfWeek = week[new Date(date).getDay()];
+		return dayOfWeek ? dayOfWeek : "";
+	}
+    
+	function addWeekendsCss(weekend) {
+		if (weekend == "") return "";
+		if (weekend == "Sun") {
+			return "(<span style=\"color:red\">" + weekend + "</span>)";
+		} else if (weekend == "Sat") {
+			return "(<span style=\"color:blue\">" + weekend + "</span>)";
+		}
+		return "(" + weekend + ")";
+	}
+	
+	function callAjax(url, successFnc) {
+		$.ajax({	
+			url : url,
+			type : "GET",
+			dataType : "json",
+			contentType : "application/json; charset=UTF-8",
+			success : function(data, textStatus, jqXHR) {
+				if (data.head.status == 200) {
+					successFnc(data.body.data);
+				} else {
+					console.log(data, textStatus, jqXHR);
+				}
+			},
+			error : function(jqXHR, textStatus, errorThrown) {
+				console.log(jqXHR, textStatus, errorThrown);
+			}
+		});		
+	}    
+	</script>
+</body>
+
+</html>

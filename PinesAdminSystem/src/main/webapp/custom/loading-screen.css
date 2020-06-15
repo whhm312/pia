@@ -1,0 +1,20 @@
+#api_mask {
+	position: absolute;
+	left: 0;
+	top: 0;
+	z-index: 99999;
+	background-color: #797979;
+	display: none;
+	filter:alpha(opacity:'60'); 
+	background: rgba(0, 0, 0, 0.6);
+	width:100%;
+	height:100%; 
+}
+
+.window {
+	display: none;
+	position: absolute;
+	left: 100px;
+	top: 100px;
+	z-index: 10000;
+}

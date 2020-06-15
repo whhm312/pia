@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	
+    <meta name="viewport" content="width=device-width, initial-scale=1.0 ,maximum-scale=1.0, minimum-scale=1.0,user-scalable=no,target-densitydpi=medium-dpi">        
+	<script type="text/javascript" src="js/jquery.min.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/i18next/1.9.0/i18next.min.js"></script>
+	<script type="text/javascript" src="js/common.js" charset="utf-8"></script>
+	<script type="text/javascript" src="js/custom.js"></script>
+	<script type="text/javascript" src="js/jquery.cookie.js"></script>
+	<script type="text/javascript" src="js/pines.js"></script>
+	<link rel="stylesheet" href="css/font-awesome.min.css">
+	<link href="css/common.css" rel="stylesheet" type="text/css">	
+	<link href="css/reset.css" rel="stylesheet" type="text/css">
+	<link rel="icon" href="img/pia-icon.png" type="image/gif" sizes="48x48"/>
+	<script>
+	var COUNT_SERVER_ERROR = 0;
+	$(document).ready(function() {
+		if (!$.cookie("token")) {
+			alert("You need sign in.");
+			window.location.replace("/");
+			return false;
+		}
+		
+		changeLang($.cookie("changeLang"));
+		
+		$(".bookmark").on("click", function() {
+			location.href="02_01_bookmark.html";
+		});
+		
+		$("#popupCloseButton").click(closePopup);
+		$("#saveRequestButton").click(saveRequest);
+		
+		gridEmergencyContacts();
+	});
+	
+	$(window).load(function(){
+		if (COUNT_SERVER_ERROR > 0) {
+			alert("Server Error. Please try again later.");
+		}
+	});
+	
+	function saveRequest () {
+		if (!isSaveRequestValidate()) {
+			return false;
+		}
+		
+		$.ajax({
+			headers : getHeaders("Authorization", $.cookie("token")),
+			url : SERVER_URI + "/branches/"+$.cookie("branchSeq")+"/students/"+$.cookie("userId")+"/requests",
+			type : "POST",
+			data : getJsonData(),
+			dataType : "json",
+			contentType : "application/json; charset=UTF-8",
+			beforeSend : function(jqXHR, settings) {
+				blockScreen();
+			},
+			success : function(data, textStatus, jqXHR) {
+				//console.log(data);
+				if (data.head.status == 200) {
+					$("#requestDetail").val("");
+					$("#saveRequestType").val("");
+					alertSuccess();
+					
+					gridRequests();
+				} else {
+					console.log("ERROR -----------\n ", data);
+					//alertError(data.head.status, data.head.message);
+					COUNT_SERVER_ERROR++;
+					if (data.head.status == 401) {
+						signout();
+					}
+				}
+			},
+			error : function(jqXHR, textStatus, errorThrown) {
+				console.log("error", jqXHR, textStatus, errorThrown);
+				//alert("Server Error. Please try again later.");
+				COUNT_SERVER_ERROR++;
+			},
+			complete : function(jqXHR, textStatus) {
+				unBlockScreen();
+			}
+		});
+	}
+
+	function isSaveRequestValidate() {
+		if (!$("#saveRequestType").val()) {
+			$("#saveRequestType").focus();
+			return false;
+		}
+		if (!$("#requestDetail").val()) {
+			$("#requestDetail").focus();
+			return false;
+		}
+		
+		return true;
+	}
+	
+	function getJsonData() {
+		return JSON.stringify({
+			detail : $("#requestDetail").val(),
+			type : $("#saveRequestType").val()
+		});
+	}
+	
+	function gridEmergencyContacts() {
+		$.ajax({
+			headers : getHeaders("Authorization", $.cookie("token")),
+			url : SERVER_URI + "/branches/"+$.cookie("branchSeq")+"/emergency/contacts",
+			type : "GET",
+			dataType : "json",
+			contentType : "application/json; charset=UTF-8",
+			beforeSend : function(jqXHR, settings) {
+				blockScreen();
+			},
+			success : function(data, textStatus, jqXHR) {
+				if (data.head.status == 200) {
+					var $results = data.body.data;
+					var html = "";
+					$("#contactUl").empty();
+					$.each($results, function(index, item) {
+						//console.log("emergency : ", index, item);
+						html = "";
+						html += "<li>";
+						html += "<a href=\"tel:" + item.contact + "\">";
+						html += "<h5>" + item.title + " <span>" + item.name + " (" + item.nationality + ")</span></h5>";
+						html += "<div class=\"lineInput\">";
+						html += "<i class=\"fa fa-phone\" aria-hidden=\"true\"></i><span class=\"basic\">" + item.contact + "</span>";
+						html += "</div>";
+						html += "</a>";
+						html += "</li>";
+						
+						$("#contactUl").append(html);
+					});
+					
+					$("#emergencyContactDiv").show();
+					
+				} else if (data.head.status == 204) {
+					console.log("ERROR -----------\n ", data);
+					unBlockScreen();
+				} else {
+					//alertError(data.head.status, data.head.message);
+					COUNT_SERVER_ERROR++;
+					console.log("ERROR -----------\n ", data);
+					if (data.head.status == 401) {
+						signout();
+					}
+				}
+			},
+			error : function(jqXHR, textStatus, errorThrown) {
+				console.log("error", jqXHR, textStatus, errorThrown);
+				//alert("Server Error. Please try again later.");
+				COUNT_SERVER_ERROR++;
+				unBlockScreen();
+			},
+			complete : function(jqXHR, textStatus) {
+				gridRequests();
+			}
+		});
+	}
+	
+	function gridRequests() {
+		$.ajax({
+			headers : getHeaders("Authorization", $.cookie("token")),
+			url : SERVER_URI + "/branches/"+$.cookie("branchSeq")+"/students/"+$.cookie("userId")+"/requests",
+			type : "GET",
+			dataType : "json",
+			contentType : "application/json; charset=UTF-8",
+			success : function(data, textStatus, jqXHR) {
+				if (data.head.status == 200) {
+					var $results = data.body.data;
+					var html = "";
+					
+					if (data.body.totalCount > 0) {
+						$("#requestTbody").find("tr:gt(0)").remove();
+					}
+					
+					$.each($results, function(index, item) {
+						//console.log("requests : ", index, item);
+						
+						html = "";
+						html += "<tr onclick=\"javascript:viewRequestDetail('" + index + "', '" + item.status + "');\">";
+						html += "<input type=\"hidden\" name=\"listRequestDetail\" value=\"" + item.detail + "\">";
+						html += "<input type=\"hidden\" name=\"listRequestType\" value=\"" + item.type + "\">";
+						html += "<input type=\"hidden\" name=\"listRequestRegisterDate\" value=\"" + item.registerDate + "\">";
+						html += "<input type=\"hidden\" name=\"listRequestStaff\" value=\"" + item.staff + "\">";
+						html += "<input type=\"hidden\" name=\"listRequestReply\" value=\"" + item.reply + "\">";
+						html += "<input type=\"hidden\" name=\"listRequestIsReply\" value=\"" + item.isReply + "\">";
+						html += "<input type=\"hidden\" name=\"listRequestReplyDate\" value=\"" + item.replyDate + "\">";
+						html += "<td>" + item.registerDate + "</td>";
+						html += "<td>" + item.type + "</td>";
+						html += "<td><input type=\"text\" style=\"background-color:transparent;border:none\" readOnly onfocus=\"this.blur();\" value=\"" + item.detail + "\"></td>";
+						html += "<td data-i18n=\"" + getStatus(item.status) + "\"></td>";
+						html += "</tr>";
+						
+						$("#requestTbody").append(html);
+					});
+					
+					$("#requestTbody").i18n();
+					$("#requestDiv").show();
+				} else if (data.head.status == 204) {
+					console.log("ERROR -----------\n ", data);
+					unBlockScreen();
+				} else {
+					//alertError(data.head.status, data.head.message);
+					COUNT_SERVER_ERROR++;
+					console.log("ERROR -----------\n ", data);
+					if (data.head.status == 401) {
+						signout();
+					}
+				}
+			},
+			error : function(jqXHR, textStatus, errorThrown) {
+				console.log("error", jqXHR, textStatus, errorThrown);
+				//alert("Server Error. Please try again later.");
+				COUNT_SERVER_ERROR++;
+				unBlockScreen();
+			},
+			complete : function(jqXHR, textStatus) {
+				getNotices("");
+			}
+		});
+	}
+
+	function getStatus(status) {
+		if (status == "Request") {
+			return "campus:notYetReply";
+		} else if (status == "Progress") {
+			return "campus:progress";
+		} else {
+			return "campus:finish";
+		}
+	}
+	
+	function viewRequestDetail(index, status) {
+		var height = window.innerHeight / 2;
+		var html = "<div style=\"overflow-y:scroll; min-height: 100px; max-height:" + height + "px; width:100%\">"
+		html += "<b>[" + $("[name=listRequestType]").eq(index).val() + "]</b> " + $("[name=listRequestDetail]").eq(index).val();
+		html += "</div>";
+		
+		$("#popupDetail").html(html);
+		$("#popupStatus").attr("data-i18n", getStatus(status));
+		$("#popupStatus").i18n();
+		$("#popupDate").text("  " + $("[name=listRequestRegisterDate]").eq(index).val());
+
+		
+		if (getBoolean($("[name=listRequestIsReply]").eq(index).val())) {
+			$("#pupupReplyTr").css("display", "");
+			$("#popupReplyTh").attr("data-i18n", "campus:reply");
+			$("#popupReplyTh").i18n();
+			
+			html = "<div style=\"overflow-y:scroll; height:100px; width:100%\">"
+			html += $("[name=listRequestReply]").eq(index).val();
+			html += "<br><br>";
+			html += $("[name=listRequestStaff]").eq(index).val();
+			html += " (" + $("[name=listRequestReplyDate]").eq(index).val() + ")";
+			html += "</div>";
+			$("#popupReply").html(html);
+		} else {
+			$("#pupupReplyTr").css("display", "none");
+		}
+		
+		openPopup();
+	}
+	
+	var noticeOffset = 5;
+	var noticeSelectedPage = 1;
+	function getNotices(argSelectedPage) {
+		if (argSelectedPage && argSelectedPage > 0) {
+			noticeSelectedPage = argSelectedPage;
+		}
+		
+		$.ajax({
+			headers : getHeaders("Authorization", $.cookie("token")),
+			url : SERVER_URI + "/branches/"+$.cookie("branchSeq")+"/notices/languages/"+$.cookie("languageSeq") + "?offset=" + noticeOffset + "&selectedPage=" + noticeSelectedPage,
+			type : "GET",
+			dataType : "json",
+			contentType : "application/json; charset=UTF-8",
+			success : function(data, textStatus, jqXHR) {
+				if (data.head.status == 200) {
+					var $results = data.body.data;
+					var html = "";
+					if (!$results) {
+						return false;
+					}
+
+					$("#noticeTbody").find("tr:gt(0)").remove();
+					
+					//console.log(data.body.totalCount, $results);
+					$.each($results, function(index, item) {
+						//console.log("requests : ", index, item);
+						html = "";
+						html += "<tr onclick=\"javascript:viewNoticeDetail(" + item.noticeSeq + ")\">";
+						html += "<td>" + item.shortRegisterDate + "</td>";
+						html += "<td>" + item.title + "</td>";
+						html += "</tr>";						
+						$("#noticeTbody").append(html);
+					});
+					
+					if ($results.length < 1) {
+						$("#noticeTbody").append("<tr><td colspan=\"2\" style=\"text-align: center\" data-i18n=\"common:none\"></td></tr>");
+						$("#noticeTbody").i18n();
+						$(".list_bottom").css("display", "none");
+						return false;
+					} else {
+						var showStartNumber = 1;
+						if (noticeSelectedPage > 1) {
+							showStartNumber = (noticeSelectedPage-1) + noticeOffset;
+						}
+						
+						var showEndNumber = noticeOffset;
+						if (noticeSelectedPage > 1) {
+							showEndNumber = showStartNumber + noticeOffset;
+							if (data.body.totalCount < showEndNumber) {
+								showEndNumber = data.body.totalCount;
+							}
+						}
+						
+						$("#noticeDiv .list_paging .current").text(showStartNumber + "~" + showEndNumber);
+						$("#noticeDiv .list_paging .total").text(data.body.totalCount);
+						
+						setNoticeButtons(data.body.totalCount, showStartNumber, showEndNumber);
+					}
+					
+					$("#noticeDiv").show();
+				} else if (data.head.status == 204) {
+					console.log("ERROR -----------\n ", data);
+				} else {
+					if (data.head.message.indexOf("Failed to convert value of type 'java.lang.String'") > -1) {
+						console.log("ERROR -----------\n ", data);
+						signout();
+						return false;
+					}
+					
+					//alertError(data.head.status, data.head.message);
+					COUNT_SERVER_ERROR++;
+					console.log("ERROR -----------\n ", data);
+					if (data.head.status == 401) {
+						signout();
+						return false;
+					}
+				}
+			},
+			error : function(jqXHR, textStatus, errorThrown) {
+				console.log("error", jqXHR, textStatus, errorThrown);
+				//alert("Server Error. Please try again later.");
+				COUNT_SERVER_ERROR++;
+			},
+			complete : function(jqXHR, textStatus) {
+				getFreshmanGuides("");
+			}
+		});
+	}
+
+	
+	function viewNoticeDetail(noticeSeq) {
+		$.ajax({
+			headers : getHeaders("Authorization", $.cookie("token")),
+			url : SERVER_URI + "/branches/"+$.cookie("branchSeq")+"/notices/" + noticeSeq,
+			type : "GET",
+			dataType : "json",
+			contentType : "application/json; charset=UTF-8",
+			beforeSend : function(jqXHR, settings) {
+				blockScreen();
+			},
+			success : function(data, textStatus, jqXHR) {
+				if (data.head.status == 200) {
+					var $result = data.body.data;
+
+					$("#popupTitle").text($result.title);
+					$("#popupDate").text($result.writer + ", " + $result.registerDate);
+					
+					var height = window.innerHeight / 2;
+					var html = "<div style=\"overflow-y:scroll; min-height: 100px; max-height:" + height + "px; width:100%\">"
+					html += $result.content;
+					html += "</div>";
+					$("#popupDetail").html(html);
+					
+					if (html.indexOf("img") > -1) {
+						var width = window.innerWidth / 2;
+						$("#popupDetail img").css({"width":width, "height":"auto"});
+					}
+					
+					if (getBoolean($result.hasAttachment)) {
+						$("#popupReplyTh").attr("data-i18n", "freshman:detailAttachment");
+						$("#popupReplyTh").i18n();
+						html = "<a href=\"javascript:fileDownload(";
+						html += "'";
+						html += $result.fileDownloadUrl;
+						html += "', '";
+						html += $result.downloadFilename;
+						html += "'";
+						html +=	 ");\">";
+						html += $result.downloadFilename;
+						html += "</a>";
+						$("#popupReply").html(html);
+						$("#pupupReplyTr").css("display", "");
+					} else {
+						$("#pupupReplyTr").css("display", "none");
+					}
+					
+					openPopup();
+				} else if (data.head.status == 204) {
+					console.log("ERROR -----------\n ", data);
+				} else {
+					console.log("ERROR -----------\n ", data);
+					//alertError(data.head.status, data.head.message);
+					COUNT_SERVER_ERROR++;
+					if (data.head.status == 401) {
+						signout();
+					}
+				}
+			},
+			error : function(jqXHR, textStatus, errorThrown) {
+				console.log("error", jqXHR, textStatus, errorThrown);
+				//alert("Server Error. Please try again later.");
+				COUNT_SERVER_ERROR++;
+			},
+			complete : function(jqXHR, textStatus) {
+				unBlockScreen();
+			}
+		});
+	}
+
+	function setNoticeButtons(resultsCount, showStartNumber, showEndNumber) {
+		if (resultsCount > noticeOffset && resultsCount != showEndNumber) {
+			$("#noticeDiv .list_paging .btn_next").removeClass("disabled");
+			$("#noticeDiv .list_paging .btn_next").removeAttr("disabled");
+			$("#noticeDiv .list_paging .btn_next").on("click", function () {
+				blockScreen();
+    				getNotices(++noticeSelectedPage);
+			});
+		} else {
+			$("#noticeDiv .list_paging .btn_next").attr("disabled", true);
+			$("#noticeDiv .list_paging .btn_next").addClass("disabled");
+			$("#noticeDiv .list_paging .btn_next").unbind("click");
+		}
+		
+		if (noticeSelectedPage > 1) {
+			$("#noticeDiv .list_paging .btn_prev").removeClass("disabled");
+			$("#noticeDiv .list_paging .btn_prev").removeAttr("disabled");
+			$("#noticeDiv .list_paging .btn_prev").on("click", function() {
+				blockScreen();
+				getNotices(--noticeSelectedPage);
+			});
+		} else {
+			$("#noticeDiv .list_paging .btn_prev").attr("disabled", true);
+			$("#noticeDiv .list_paging .btn_prev").addClass("disabled");
+			$("#noticeDiv .list_paging .btn_prev").unbind("click");
+		}
+	}
+	
+	var guideOffset = 5;
+	var guideSelectedPage = 1;
+	function getFreshmanGuides(argSelectedPage) {
+		if (argSelectedPage && argSelectedPage > 0) {
+			guideSelectedPage = argSelectedPage;
+		}
+		
+		$.ajax({
+			headers : getHeaders("Authorization", $.cookie("token")),
+			url : SERVER_URI + "/branches/"+$.cookie("branchSeq")+"/freshman/guides/nationalities/" + $.cookie("nationalitySeq") + "?offset=" + guideOffset + "&selectedPage=" + guideSelectedPage,
+			type : "GET",
+			dataType : "json",
+			contentType : "application/json; charset=UTF-8",
+			success : function(data, textStatus, jqXHR) {
+				if (data.head.status == 200) {
+					var $results = data.body.data;
+					var html = "";
+					if (!$results) {
+						return false;
+					}
+
+					$("#guideTbody").find("tr:gt(0)").remove();
+					
+					console.log(data.body.totalCount, $results);
+					$.each($results, function(index, item) {
+						//console.log("requests : ", index, item);
+						html = "";
+						html += "<tr onclick=\"javascript:viewDetailFreshmanGuide(" + item.guideSeq + ")\">";
+						html += "<td>" + item.registerDate + "</td>";
+						html += "<td>" + item.title + "</td>";
+						html += "</tr>";						
+						$("#guideTbody").append(html);
+					});
+					
+					if ($results.length < 1) {
+						$("#guideTbody").append("<tr><td colspan=\"2\" style=\"text-align: center\" data-i18n=\"common:none\"></td></tr>");
+						$("#guideTbody").i18n();
+						$("#freshmanGuideDiv .list_bottom").css("display", "none");
+						return false;
+					} else {
+						var showStartNumber = 1;
+						if (guideSelectedPage > 1) {
+							showStartNumber = (guideSelectedPage-1) + guideOffset;
+						}
+						
+						var showEndNumber = guideOffset;
+						if (guideSelectedPage > 1) {
+							showEndNumber = showStartNumber + guideOffset;
+							if (data.body.totalCount < showEndNumber) {
+								showEndNumber = data.body.totalCount;
+							}
+						}
+						
+						$("#freshmanGuideDiv .list_paging .current").text(showStartNumber + "~" + showEndNumber);
+						$("#freshmanGuideDiv .list_paging .total").text(data.body.totalCount);
+						
+						setGuideButtons(data.body.totalCount, showStartNumber, showEndNumber);
+						$("#freshmanGuideDiv").show();
+					}
+				} else if (data.head.status == 204) {
+					console.log("ERROR -----------\n ", data);
+				} else {
+					//alertError(data.head.status, data.head.message);
+					COUNT_SERVER_ERROR++;
+					console.log("ERROR -----------\n ", data);
+					if (data.head.status == 401) {
+						signout();
+					}
+				}
+			},
+			error : function(jqXHR, textStatus, errorThrown) {
+				console.log("error", jqXHR, textStatus, errorThrown);
+				//alert("Server Error. Please try again later.");
+				COUNT_SERVER_ERROR++;
+			},
+			complete : function(jqXHR, textStatus) {
+				unBlockScreen();
+			}
+		});
+	}
+	
+	function viewDetailFreshmanGuide(guideSeq) {
+		$.ajax({
+			headers : getHeaders("Authorization", $.cookie("token")),
+			url : SERVER_URI + "/branches/"+$.cookie("branchSeq")+"/freshman/guides/" + guideSeq,
+			type : "GET",
+			dataType : "json",
+			contentType : "application/json; charset=UTF-8",
+			beforeSend : function(jqXHR, settings) {
+				blockScreen();
+			},
+			success : function(data, textStatus, jqXHR) {
+				if (data.head.status == 200) {
+					var $result = data.body.data;
+					
+					$("#popupTitle").text($result.title);
+					$("#popupDate").text($result.writer + ", " + $result.registerDate);
+					var height = window.innerHeight / 2;
+					var html = "<div style=\"overflow-y:scroll; min-height: 100px; max-height:" + height + "px; width:100%\">"
+					html += $result.content;
+					html += "</div>";
+					$("#popupDetail").html(html);
+					
+					if (html.indexOf("img") > -1) {
+						var width = window.innerWidth / 2;
+						$("#popupDetail img").css({"width":width, "height":"auto"});
+					}
+					
+					if (getBoolean($result.hasAttachment)) {
+						$("#popupReplyTh").attr("data-i18n", "freshman:detailAttachment");
+						$("#popupReplyTh").i18n();
+						var html = "<a href=\"javascript:fileDownload(";
+						html += "'";
+						html += $result.fileDownloadUrl;
+						html += "', '";
+						html += $result.downloadFilename;
+						html += "'";
+						html +=	 ");\">";
+						html += $result.downloadFilename;
+						html += "</a>";
+						$("#popupReply").html(html);
+						$("#pupupReplyTr").css("display", "");
+					} else {
+						$("#pupupReplyTr").css("display", "none");
+					}
+					
+					openPopup();
+				} else if (data.head.status == 204) {
+					console.log("ERROR -----------\n ", data);
+				} else {
+					console.log("ERROR -----------\n ", data);
+					//alertError(data.head.status, data.head.message);
+					COUNT_SERVER_ERROR++;
+					if (data.head.status == 401) {
+						signout();
+					}
+				}
+			},
+			error : function(jqXHR, textStatus, errorThrown) {
+				console.log("error", jqXHR, textStatus, errorThrown);
+				//alert("Server Error. Please try again later.");
+				COUNT_SERVER_ERROR++;
+			},
+			complete : function(jqXHR, textStatus) {
+				unBlockScreen();
+			}
+		});
+	}
+	
+	function setGuideButtons(resultsCount, showStartNumber, showEndNumber) {
+		if (resultsCount > guideOffset && resultsCount != showEndNumber) {
+			$("#freshmanGuideDiv .list_paging .btn_next").removeClass("disabled");
+			$("#freshmanGuideDiv .list_paging .btn_next").removeAttr("disabled");
+			$("#freshmanGuideDiv .list_paging .btn_next").on("click", function () {
+				blockScreen();
+				getFreshmanGuides(++guideSelectedPage);
+			});
+		} else {
+				$("#freshmanGuideDiv .list_paging .btn_next").attr("disabled", true);
+				$("#freshmanGuideDiv .list_paging .btn_next").addClass("disabled");
+				$("#freshmanGuideDiv .list_paging .btn_next").unbind("click");
+		}
+		
+		if (guideSelectedPage > 1) {
+				$("#freshmanGuideDiv .list_paging .btn_prev").removeClass("disabled");
+				$("#freshmanGuideDiv .list_paging .btn_prev").removeAttr("disabled");
+				$("#freshmanGuideDiv .list_paging .btn_prev").on("click", function() {
+					blockScreen();
+					getFreshmanGuides(--guideSelectedPage);
+				});
+		} else {
+				$("#freshmanGuideDiv .list_paging .btn_prev").attr("disabled", true);
+				$("#freshmanGuideDiv .list_paging .btn_prev").addClass("disabled");
+				$("#freshmanGuideDiv .list_paging .btn_prev").unbind("click");
+		}
+	}
+	
+	</script>
+	
+</head>
+<body class="translation">
+	<h2 id="header">Pines International Academy<div class="bookmark bookmarkOff"><i class="fa fa-star-o" aria-hidden="true"></i></div></h2>
+    
+    <div id="tabMenu" class="wrap">
+        <ul>
+            <li ><a href="02_02_00_personal.html" data-i18n="common:personal"></a></li>
+            <li><a href="02_03_00_education.html" data-i18n="common:eduInfo"></a></li>
+            <li><a href="02_04_00_campus.html" data-i18n="common:campusInfo" class="on"></a></li>
+        </ul>
+    </div>
+	
+	<section>
+	
+		<div class="layoutBox" id="noticeDiv" style="display:none">
+			<h4><span data-i18n="campus:notice"></span><div class="conBookmark bookmarkOff"><i class="fa fa-star-o" aria-hidden="true"></i></div></h4>
+            
+			
+                <table class="tableT01">
+                    <colgroup>
+                      <col width="50px">
+                      <col width="*">
+                     </colgroup>
+                    <tbody id="noticeTbody">
+                        <tr>
+                            <th data-i18n="common:date"></th>
+                            <th data-i18n="campus:title"></th>
+                        </tr>
+                    		<tr>
+                    			<td colspan="2" style="text-align: center" data-i18n="common:none"></td>
+                    		</tr>
+                    </tbody>
+                </table>  
+                <div class="list_bottom">
+                		<p class="list_loading" style="display: none;">
+                		<span class="ani_loading">
+                		<span class="ani_obj1"></span>
+                		<span class="ani_obj2"></span>
+                		<span class="ani_obj3"></span>
+                		</span>
+                		</p>
+                		<p class="list_more" style="display: none;">
+                			<button class="btn_more" data-clickcr="clt.more"><strong>15</strong><!-- react-text: 686 -->개 더보기<!-- /react-text --></button>
+                		</p>
+                		<p class="list_paging">
+                		<button class="btn_prev disabled" disabled><i>이전 페이지</i></button>
+                		<span class="current"></span>
+                		<span class="slash">/</span>
+                		<span class="total"></span>
+                		<button class="btn_next disabled" disabled><i>다음 페이지</i></button>
+                		</p>
+           		</div>            
+
+		</div>
+		
+		<div class="layoutBox" id="requestDiv" style="display:none">
+			<h4><span data-i18n="common:request"></span><div class="conBookmark bookmarkOff"><i class="fa fa-star-o" aria-hidden="true"></i></div></h4>
+            
+			<div class="contentsArea">
+				<ul>
+					<li><b style="font-size:14px" data-i18n="campus:requestNotice"></b></li>
+					<li>
+						<select name="saveRequestType" id="saveRequestType">
+						   <option value="">Select</option>
+						   <option value="Room Facilities">Room Facilities</option>
+						   <option value="Classroom Facilities">Classroom Facilities</option>
+						   <option value="Consultation">Request for Consultation</option>
+						   <option value="Study">Study</option>
+						   <option value="Other">Other</option>
+						</select>
+                        <textarea data-i18n="[placeholder]campus:requestCaption" id="requestDetail"></textarea>                        
+					</li>
+                    
+                    <li>
+                        <button class="basic" data-i18n="common:save" id="saveRequestButton"></button>     
+                    </li>
+                    
+                </ul>
+			
+                <table class="tableT01">
+                    <colgroup>
+                      <col width="50px">
+                      <col width="50px">
+                      <col width="*">
+                      <col width="50px%">
+                     </colgroup>
+                    <tbody id="requestTbody">
+                    		<tr>
+                    			<th data-i18n="common:date"></th>
+                    			<th data-i18n="campus:division"></th>
+                    			<th data-i18n="campus:content"></th>
+                    			<th data-i18n="campus:stauts"></th>
+                    		</tr>
+                    		<tr>
+                    			<td colspan="4" style="text-align: center" data-i18n="common:none"></td>
+                    		</tr>
+                    </tbody>
+                </table>
+            </div>    
+
+		</div>
+            
+            
+		<div class="layoutBox" id="consultDiv" style="display:none">
+			<h4><span data-i18n="campus:consult"></span><div class="conBookmark bookmarkOff"><i class="fa fa-star-o" aria-hidden="true"></i></div></h4>
+            
+			<div class="contentsArea">
+				<ul>
+					<li>
+                        <textarea data-i18n="[placeholder]campus:consultCaption"></textarea> 
+                        <button class="basic" data-i18n="campus:consult"></button>  
+					</li>
+                    
+                </ul>
+			
+                <table class="tableT01">
+                    <colgroup>
+                      <col width="50px">
+                      <col width="65px">
+                      <col width="*">
+                      <col width="50px%">
+                     </colgroup>
+                    <tbody id="">
+                        <tr>
+                            <th data-i18n="common:date"></th>
+                            <th data-i18n="contract:chargeStaff"></th>
+                            <th data-i18n="campus:content"></th>
+                            <th data-i18n="campus:stauts"></th>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>    
+
+		</div>            
+		          
+
+	   <div class="layoutBox" style="display:none">
+			<h4><span data-i18n="campus:activity"></span><div class="conBookmark bookmarkOff"><i class="fa fa-star-o" aria-hidden="true"></i></div></h4>
+           
+           <div class="contentsArea">
+               <div class="contentNone">
+                   <p data-i18n="campus:activityNo"></p>
+               </div>
+            </div>
+			
+		</div>  
+            
+	   <div class="layoutBox" style="display:none">
+			<h4><span data-i18n="campus:todayMenu"></span><div class="conBookmark bookmarkOff"><i class="fa fa-star-o" aria-hidden="true"></i></div></h4>
+			
+            <div class="lineArea optionClass">
+                <p data-i18n="campus:brackfast"></p>
+                
+                <ul class="optionClassSchedule">
+                    <li>
+                        <p style="padding-top: 0;" data-i18n="campus:menu"></p>
+                        <div style="top: -24px;" data-i18n="campus:evalution"></div>
+                    </li>
+                </ul>
+  
+                <p data-i18n="campus:lunch"></p>
+                <ul class="optionClassSchedule">
+                    <li>
+                        <p style="padding-top: 0;" data-i18n="campus:menu"></p>
+                        <div style="top: -24px;" data-i18n="campus:evalution"></div>
+                    </li>                    
+                </ul>
+ 
+                <p data-i18n="campus:dinner"></p>                
+                <ul class="optionClassSchedule">
+                    <li>
+                        <p style="padding-top: 0;" data-i18n="campus:menu"></p>
+                        <div style="top: -24px;" data-i18n="campus:evalution"></div>
+                    </li>                    
+                </ul>                
+           </div>  
+        </div>
+		  
+		<div class="layoutBox" id="freshmanGuideDiv" style="display:none">
+			<h4><span data-i18n="campus:freshmanGuide"></span><div class="conBookmark bookmarkOff"><i class="fa fa-star-o" aria-hidden="true"></i></div></h4>
+            
+			
+                <table class="tableT01">
+                    <colgroup>
+                      <col width="50px">
+                      <col width="*">
+                     </colgroup>
+                    <tbody id="guideTbody">
+                        <tr>
+                            <th data-i18n="common:date"></th>
+                            <th data-i18n="campus:title"></th>
+                        </tr>
+                    		<tr>
+                    			<td colspan="2" style="text-align: center" data-i18n="common:none"></td>
+                    		</tr>
+                    </tbody>
+                </table>  
+                <div class="list_bottom">
+                		<p class="list_loading" style="display: none;">
+                		<span class="ani_loading">
+                		<span class="ani_obj1"></span>
+                		<span class="ani_obj2"></span>
+                		<span class="ani_obj3"></span>
+                		</span>
+                		</p>
+                		<p class="list_more" style="display: none;">
+                			<button class="btn_more" data-clickcr="clt.more"><strong>15</strong><!-- react-text: 686 -->개 더보기<!-- /react-text --></button>
+                		</p>
+                		<p class="list_paging">
+                		<button class="btn_prev disabled" disabled><i>이전 페이지</i></button>
+                		<span class="current"></span>
+                		<span class="slash">/</span>
+                		<span class="total"></span>
+                		<button class="btn_next disabled" disabled><i>다음 페이지</i></button>
+                		</p>
+           		</div>            
+
+		</div>  
+            
+		<div class="layoutBox" style="display:none">
+			<h4><span data-i18n="campus:againstruleList"></span><div class="conBookmark bookmarkOff"><i class="fa fa-star-o" aria-hidden="true"></i></div></h4>
+            
+			
+                <table class="tableT01">
+                    <colgroup>
+                      <col width="50px">
+                      <col width="*">
+                     </colgroup>
+                    <tbody>
+                        <tr>
+                            <th data-i18n="common:date"></th>
+                            <th data-i18n="campus:against"></th>
+                        </tr>
+                        
+<!--
+                        <tr>
+                            <td data-i18n="education:classRoom"></td>
+                            <td data-i18n="education:classRoom"></td>
+                            <td data-i18n="education:subject"></td>
+                            <td data-i18n="education:teacher"></td>
+                        </tr>
+-->              
+                        <tr>
+                            <td>09:20</td>
+                            <td>소지품 분실에 주의하시기 바랍니다.</td>
+                        </tr>   
+                        
+                        <tr>
+                            <td>09:20</td>
+                            <td>조이버스 시간표 안내</td>
+                        </tr>   
+                        
+                    </tbody>
+                </table>  
+            
+		        <button class="line" data-i18n="campus:rule"></button> 
+            
+		</div>              
+
+            
+
+		<div class="layoutBox" style="display:none">
+			<h4><span data-i18n="campus:quantity"></span><div class="conBookmark bookmarkOff"><i class="fa fa-star-o" aria-hidden="true"></i></div></h4>
+            
+            <div class="contentsArea">
+                <ul class="contentList">
+                    <li class="article">
+                        <a href="">
+                            <span data-i18n="campus:electric"></span>
+                            <div class="right">
+                               <ul class="">
+                                    <li><span data-i18n="common:data"></span></li>
+                                </ul>                               
+                            </div>
+                        </a>
+                    </li>
+                    
+                    <li class="article">
+                        <a href="">
+                            <span data-i18n="campus:water"></span>
+                            <div class="right">
+                               <ul class="">
+                                    <li><span data-i18n="common:data"></span></li>                        
+                                </ul>                               
+                            </div>
+                        </a>
+                    </li>
+                    
+                    <li class="article">
+                        <a href="">
+                            <span data-i18n="campus:amount"></span>
+                            <div class="right">
+                               <ul class="">
+                                    <li><span data-i18n="common:data"></span></li>
+                                </ul>                               
+                            </div>
+                        </a>
+                    </li>    
+                    
+                    <li class="article">
+                        <a href="">
+                            <span data-i18n="campus:maximum"></span>
+                            <div class="right">
+                               <ul class="">
+                                    <li><span data-i18n="common:data"></span></li>
+                                </ul>                               
+                            </div>
+                        </a>
+                    </li> 
+                                     
+                    
+                </ul>
+
+               <div class="contentAlert">
+                   <p data-i18n="campus:exceedUsage"></p>
+               </div>   				
+				
+		        <button class="line" data-i18n="campus:usageList"></button>                
+            </div>
+        </div>  
+            
+		<div class="layoutBox" style="display:none">
+			<h4><span data-i18n="campus:tourPlan"></span><div class="conBookmark bookmarkOff"><i class="fa fa-star-o" aria-hidden="true"></i></div></h4>
+            
+			
+                <table class="tableT01">
+                    <colgroup>
+                      <col width="50px">
+                      <col width="*">
+                      <col width="50px">
+                     </colgroup>
+                    <tbody>
+                        <tr>
+                            <th data-i18n="common:date"></th>
+                            <th data-i18n="campus:location"></th>
+                            <th data-i18n="campus:stauts"></th>
+                        </tr>
+                        
+<!--
+                        <tr>
+                            <td data-i18n="education:classRoom"></td>
+                            <td data-i18n="education:classRoom"></td>
+                            <td data-i18n="education:subject"></td>
+                            <td data-i18n="education:teacher"></td>
+                        </tr>
+-->              
+                        <tr>
+                            <td>09:20</td>
+                            <td>헌드레드 아일랜드</td>
+                            <td data-i18n="campus:register"></td>
+                        </tr>   
+                        
+						<tr>
+							<td>09:20</td>
+							<td>세부</td>
+							<td data-i18n="campus:reply"></td>
+						</tr>
+	
+						<tr>
+							<td>09:20</td>
+							<td>세부</td>
+							<td data-i18n="campus:finish"></td>
+						</tr>
+                        
+                    </tbody>
+                </table>  
+            
+		        <button class="basic" data-i18n="campus:edit"></button>
+                <p class="btnCaption emphasis" data-i18n="campus:tourCaption"></p>
+            
+		</div>                
+        
+		<div class="layoutBox" id="emergencyContactDiv" style="display:none">
+			<h4><span data-i18n="common:EmergencyContact"></span><div class="conBookmark bookmarkOff"><i class="fa fa-star-o" aria-hidden="true"></i></div></h4>
+			
+			<div class="contentsArea">
+				<ul id="contactUl">
+				</ul>
+			</div>
+        
+		</div>
+
+	</section>
+					
+    <div class="popup_over"  style="display:none"></div>
+    <div class="popup"  style="display:none">
+    
+        <h4 id="popupTitle"></h4>
+        <div class="popupContents">
+            <h5><span></span><b id="popupStatus"></b><b id="popupDate"></b></h5>
+            <table class="tableT02">
+                <colgroup>
+                    <col width="80px">
+                    <col width="*">
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th data-i18n="campus:content">content</th>
+                        <td id="popupDetail"></td>
+                    </tr>
+                    
+                    <tr id="pupupReplyTr">
+                        <th data-i18n="campus:reply" id="popupReplyTh">reply</th>
+                        <td id="popupReply"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="popupFooter">
+            <div class="popupFooter_check"></div>
+            <a href="#"><div class="popupFooter_close" data-i18n="common:close" id="popupCloseButton">닫기</div></a>
+        </div>
+    
+    </div>
+	
+    <div class="loading_popup_over" style="display:none"></div>
+	<img src="img/loading.svg" class="loading" style="display:none"/>
+</body>
+</html>

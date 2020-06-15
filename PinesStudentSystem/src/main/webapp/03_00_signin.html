@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	
+    <meta name="viewport" content="width=device-width, initial-scale=1.0 ,maximum-scale=1.0, minimum-scale=1.0,user-scalable=no,target-densitydpi=medium-dpi">        
+	<script type="text/javascript" src="js/jquery.min.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/i18next/1.9.0/i18next.min.js"></script>
+	<script type="text/javascript" src="js/common.js" charset="utf-8"></script>
+	<script type="text/javascript" src="js/custom.js"></script>
+	<script type="text/javascript" src="js/md5.min.js"></script>
+	<script type="text/javascript" src="js/base64.js"></script>
+	<script type="text/javascript" src="js/jquery.cookie.js"></script>
+	<link rel="stylesheet" href="css/font-awesome.min.css">
+	<link href="css/common.css" rel="stylesheet" type="text/css">	
+	<link href="css/reset.css" rel="stylesheet" type="text/css">
+	<link rel="icon" href="img/pia-icon.png" type="image/gif" sizes="48x48"/>
+	<script>
+	$(document).ready(function() {
+		$("#signinButton").click(signin);
+
+		var cookieChangeLang = $.cookie("changeLang");
+		if (!cookieChangeLang) {
+			cookieChangeLang = "en";
+		}
+		changeLang(cookieChangeLang);
+	});
+	
+	function signin() {
+		$.ajax({
+			headers : "",
+			url : SERVER_URI + "/login",
+			type : "POST",
+			data : getJsonData(),
+			dataType : "json",
+			contentType : "application/json; charset=UTF-8",
+			beforeSend : function(jqXHR, settings) {
+				blockScreen();
+			},
+			success : function(data, textStatus, jqXHR) {
+				if (data.head.status == 200) {
+					var token_id = $("#username").val();
+					var token_pw = md5($("#password").val());
+					var token = "Basic " + Base64.encode(token_id + ":" + token_pw);
+					$.cookie("userId", token_id);
+					$.cookie("token", token);
+					$.cookie("name", data.body.data.name);
+					$.cookie("branchSeq", data.body.data.branchSeq);
+					$.cookie("nationalitySeq", data.body.data.nationalitySeq);
+					$.cookie("languageSeq", data.body.data.languageSeq);
+					setLanguage(data.body.data.language);
+					
+					window.location.replace("03_01_00_info.html");
+				} else {
+					alert("Login Failed!!");
+					$("#password").val("");
+					console.log("ERROR -----------\n ", data.head.status, data.head.message);
+				}
+			},
+			error : function(jqXHR, textStatus, errorThrown) {
+				console.log("error", jqXHR, textStatus, errorThrown);
+				alert("Server Error. Please try again later.");
+			},
+			complete : function(jqXHR, textStatus) {
+				unBlockScreen();
+			}
+		});
+	}
+
+	function blockScreen() {
+		$(".loading_popup_over").css("display", "");
+		$(".loading").css("display", "");
+	}
+
+	function unBlockScreen() {
+		$(".loading_popup_over").css("display", "none");
+		$(".loading").css("display", "none");
+	}
+
+	function setLanguage(languageName) {
+		if (languageName == "Korean") {
+			$.cookie("changeLang", "ko");
+		} else if (languageName == "English") {
+			$.cookie("changeLang", "en");
+		} else if (languageName == "Japanese") {
+			$.cookie("changeLang", "jp");
+		} else if (languageName == "Chinese") {
+			$.cookie("changeLang", "cn");
+		} else if (languageName == "Vietnamese") {
+			$.cookie("changeLang", "dn");
+		}
+	}
+	
+	function getJsonData() {
+		return JSON.stringify({
+			studentId : $("#username").val(),
+			password : md5($("#password").val())
+		});
+	}
+	</script>
+</head>
+<body class="translation" style="background-color: #e9ebef;">
+	
+	<div id="singIn">
+		<h2 id="signinLogo"><img src="img/logo.png" /></h2>
+		<hr />
+		<input type="text" data-i18n="[placeholder]signin:id" id="username" value=""/>	
+		<input type="password" data-i18n="[placeholder]signin:pw" id="password" value=""/>			
+		<button type="button" class="basic" data-i18n="signin:signIn" id="signinButton"></button>
+		<p class="SignINpw" data-i18n="signin:SignINpw"></p>
+	</div>
+		<p class="copyright">COPYRIGHT 2017 PINES ALL RIGHT RESERVED</p>	
+	
+    <div class="loading_popup_over" style="display:none"></div>
+	<img src="img/loading.svg" class="loading" style="display:none"/>
+</body>
+</html>

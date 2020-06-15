@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	
+    <meta name="viewport" content="width=device-width, initial-scale=1.0 ,maximum-scale=1.0, minimum-scale=1.0,user-scalable=no,target-densitydpi=medium-dpi">        
+	<script type="text/javascript" src="js/jquery.min.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/i18next/1.9.0/i18next.min.js"></script>
+	<script type="text/javascript" src="js/common.js" charset="utf-8"></script>
+	<script type="text/javascript" src="js/custom.js"></script>
+	<script type="text/javascript" src="js/jquery.cookie.js"></script>
+	<script type="text/javascript" src="js/pines.js"></script>
+	<script type="text/javascript" src="js/md5.min.js"></script>
+	<script type="text/javascript" src="js/base64.js"></script>
+	<link rel="stylesheet" href="css/font-awesome.min.css">
+	<link href="css/common.css" rel="stylesheet" type="text/css">	
+	<link href="css/reset.css" rel="stylesheet" type="text/css">
+	<link rel="icon" href="img/pia-icon.png" type="image/gif" sizes="48x48"/>
+	<script>
+	$(document).ready(function() {
+		if (!$.cookie("token")) {
+			alert("You need sign in.");
+			window.location.replace("/");
+			return false;
+		}
+		
+		changeLang($.cookie("changeLang"));
+
+		$("#backButton").click(function() {
+			window.history.back(1);
+		});
+		
+		$("#resetButton").click(function() {
+			$.ajax({
+				headers : getHeaders("Authorization", $.cookie("token")),
+				url : SERVER_URI + "/students/"+$.cookie("userId")+"/password/reset",
+				type : "POST",
+				dataType : "json",
+				contentType : "application/json; charset=UTF-8",
+				beforeSend : function(jqXHR, settings) {
+					blockScreen();
+				},
+				success : function(data, textStatus, jqXHR) {
+					//console.log(data);
+					if (data.head.status == 200) {
+						alertSuccess();
+						setNewCookie(data.body.data.birthday);
+					} else {
+						alertError(data.head.status, data.head.message);
+						console.log("ERROR -----------\n ", data);
+						if (data.head.status == 401) {
+							signout();
+						}
+					}
+				},
+				error : function(jqXHR, textStatus, errorThrown) {
+					console.log("error", jqXHR, textStatus, errorThrown);
+					alert("Server Error. Please try again later.");
+				},
+				complete : function(jqXHR, textStatus) {
+					unBlockScreen();
+				}
+			});
+		});
+		
+		$("#changeButton").click(function() {
+			if (!isValidate() || !isCorectPassword()) {
+				return false;
+			}
+			
+			$.ajax({
+				headers : getHeaders("Authorization", $.cookie("token")),
+				url : SERVER_URI + "/students/"+$.cookie("userId")+"/password/change",
+				type : "POST",
+				data : getJsonData(),
+				dataType : "json",
+				contentType : "application/json; charset=UTF-8",
+				beforeSend : function(jqXHR, settings) {
+					blockScreen();
+				},
+				success : function(data, textStatus, jqXHR) {
+					//console.log(data);
+					if (data.head.status == 200) {
+						alertSuccess();
+						setNewCookie();
+					} else {
+						alertError(data.head.status, data.head.message);
+						console.log("ERROR -----------\n ", data);
+						if (data.head.status == 401) {
+							signout();
+						}
+					}
+				},
+				error : function(jqXHR, textStatus, errorThrown) {
+					console.log("error", jqXHR, textStatus, errorThrown);
+					alert("Server Error. Please try again later.");
+				},
+				complete : function(jqXHR, textStatus) {
+					unBlockScreen();
+				}
+			});
+		});
+		
+		$(".bookmark").on("click", function() {
+			location.href="02_01_bookmark.html";
+		});	
+	});
+	
+	function isCorectPassword() {
+		if ($("#newPasswordFonfirm").val() != $("#newPassword").val()) {
+			$("#newPassword").val("");
+			$("#newPasswordFonfirm").val("");
+			$("#newPassword").focus();
+			return false;
+		}
+		
+		return true;
+	}
+	
+	function isValidate() {
+		if ($("#currentPassword").val() == "") {
+			$("#currentPassword").focus();
+			return false;
+		}
+		
+		if ($("#newPassword").val() == "") {
+			$("#newPassword").focus();
+			return false;
+		}
+		
+		if ($("#newPasswordFonfirm").val() == "") {
+			$("#newPasswordFonfirm").focus();
+			return false;
+		}
+		
+		return true;
+	}
+
+	function getJsonData() {
+		return JSON.stringify({
+			newPassword : md5($("#newPassword").val()),
+			currentPassword : md5($("#currentPassword").val())
+		});
+	}
+	
+	function setNewCookie(birthday) {
+		var token_id = $.cookie("userId");
+		var token_pw;
+		
+		if (birthday) {
+			token_pw = md5(birthday);
+		} else {
+			token_pw = md5($("#newPassword").val());
+		}
+		
+		$.cookie("token", "Basic " + Base64.encode(token_id + ":" + token_pw));
+	}
+	</script>
+	
+</head>
+<body class="translation">
+	<h2 id="header">
+        <div class="prev"><i class="fa fa-chevron-left" aria-hidden="true" id="backButton"></i></div>
+        <span data-i18n="siteSetting:pwChange"></span>
+    </h2>
+    
+
+	<section style="height: calc(100% - 111px);">
+		<div class="layoutBox">
+            
+            <div class="contentsArea">
+
+    			<ul>
+					<li>
+						<h5 data-i18n="siteSetting:pwOriginal"></h5>
+						<input type="password" data-i18n="[placeholder]siteSetting:pwOriginal" id="currentPassword"/>		
+					</li>
+
+					<li>
+						<h5 data-i18n="siteSetting:newPw"></h5>
+						<input type="password" data-i18n="[placeholder]siteSetting:newPw" id="newPassword"/>					
+					</li>	
+
+					<li>
+						<h5 data-i18n="siteSetting:newPwConfirm"></h5>
+						<input type="password" data-i18n="[placeholder]siteSetting:newPwConfirm" id="newPasswordFonfirm"/>					
+					</li>
+                    
+                    <li>
+                        <button class="line" data-i18n="siteSetting:pwChange" id="changeButton"></button> 
+                    </li>
+                    <li>
+		                <br>             
+						<button class="line" data-i18n="siteSetting:resetPw" id="resetButton"></button>
+		                <br>
+		                <p class="btnCaption" data-i18n="siteSetting:pwCaption"></p>             
+                    </li>
+			
+				</ul>	
+                
+            </div>
+		</div>
+
+            
+        
+            </div>
+        </div>        
+        
+
+	</section>
+	
+    <div class="loading_popup_over" style="display:none"></div>
+	<img src="img/loading.svg" class="loading" style="display:none"/>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<include resource="org/springframework/boot/logging/logback/defaults.xml" />
+	<include
+		resource="org/springframework/boot/logging/logback/console-appender.xml" />
+	<!-- 변수 지정 -->
+	<property name="LOG_DIR" value="/Users/hyemin/Documents/_WORK/00_PIA/_WORKSPACE/logs" />
+	<property name="LOG_PATH_NAME" value="${LOG_DIR}/pia_offline.log" />
+
+	<!-- FILE Appender -->
+	<appender name="FILE"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${LOG_PATH_NAME}</file>
+		<!-- 일자별로 로그파일 적용하기 -->
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${LOG_PATH_NAME}.%d{yyyyMMdd}</fileNamePattern>
+		</rollingPolicy>
+		<encoder>
+			<pattern>%d{yyyy-MM-dd HH:mm:ss} [%-5p] [%F]%M\(%L\) : %m%n</pattern>
+		</encoder>
+	</appender>
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<layout class="ch.qos.logback.classic.PatternLayout">
+			<pattern>%d{yyyy-MM-dd HH:mm:ss} [%-5p] [%F]%M\(%L\) : %m%n</pattern>
+		</layout>
+	</appender>
+
+	<logger name="org.springframework.jdbc">
+		<level value="ERROR" />
+		<appender-ref ref="STDOUT" />
+	</logger>
+	<logger name="org.apache.commons.dbcp2">
+		<level value="ERROR" />
+		<appender-ref ref="STDOUT" />
+	</logger>
+	<logger name="java.sql">
+		<level value="ERROR" />
+		<appender-ref ref="STDOUT" />
+	</logger>
+	<logger name="jdbc.sqlonly">
+		<level value="ERROR" />
+		<appender-ref ref="STDOUT" />
+	</logger>
+	<logger name="jdbc.sqltiming">
+		<level value="ERROR" />
+		<appender-ref ref="STDOUT" />
+	</logger>
+	<logger name="jdbc.audit">
+		<level value="ERROR" />
+		<appender-ref ref="FILE" />
+		<appender-ref ref="STDOUT" />
+	</logger>
+	<logger name="jdbc.resultset">
+		<level value="ERROR" />
+		<appender-ref ref="STDOUT" />
+	</logger>
+	<logger name="org.apache.logging.log4j.simplelog.StatusLogger.level">
+		<level value="TRACE" />
+		<appender-ref ref="STDOUT" />
+	</logger>
+	<logger name="com.sun.ws.rs.ext.RuntimeDelegateImpl">
+		<level value="INFO" />
+		<appender-ref ref="STDOUT" />
+	</logger>
+	<logger name="org.springframework.jndi">
+		<level value="ERROR" />
+		<appender-ref ref="STDOUT" />
+	</logger>
+	<logger name="org.springframework.web">
+		<level value="ERROR" />
+		<appender-ref ref="STDOUT" />
+	</logger>
+	<logger name="ch.qos.logback.core.joran.action.AppenderRefAction">
+		<level value="ERROR" />
+		<appender-ref ref="STDOUT" />
+	</logger>
+	
+	<root level="INFO">
+		<appender-ref ref="STDOUT" />
+		<appender-ref ref="FILE" />
+	</root>
+</configuration>

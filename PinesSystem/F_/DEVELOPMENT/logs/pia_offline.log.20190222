@@ -1,0 +1,184 @@
+2019-02-22 16:19:29 [INFO ] [StartupInfoLogger.java]logStarting(48) : Starting ServletInitializer on Hyeminui-MacBook-Pro.local with PID 11995 (/Users/hyemin/Documents/_WORK/00_PIA/_WORKSPACE/workspace/PinesSystem/target/classes started by hyemin in /Users/hyemin/Documents/_WORK/00_PIA/_WORKSPACE/workspace/PinesSystem)
+2019-02-22 16:19:31 [INFO ] [SpringApplication.java]logStartupProfileInfo(593) : No active profile set, falling back to default profiles: default
+2019-02-22 16:19:31 [INFO ] [AbstractApplicationContext.java]prepareRefresh(583) : Refreshing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@275a29b2: startup date [Fri Feb 22 16:19:31 KST 2019]; root of context hierarchy
+2019-02-22 16:19:32 [INFO ] [DirectJDKLog.java]log(183) : Illegal access: this web application instance has been stopped already.  Could not load .  The eventual following stack trace is caused by an error thrown for debugging purposes as well as to attempt to terminate the thread which caused the illegal access, and has no functional impact.
+2019-02-22 16:19:32 [INFO ] [AutowiredAnnotationBeanPostProcessor.java]<init>(155) : JSR-330 'javax.inject.Inject' annotation found and supported for autowiring
+2019-02-22 16:19:32 [INFO ] [DirectJDKLog.java]log(183) : Initializing Spring embedded WebApplicationContext
+2019-02-22 16:19:33 [INFO ] [AbstractFilterRegistrationBean.java]configure(258) : Mapping filter: 'simpleCoreFilter' to: [/*]
+2019-02-22 16:19:33 [INFO ] [AbstractFilterRegistrationBean.java]configure(258) : Mapping filter: 'errorPageFilter' to: [/*]
+2019-02-22 16:19:33 [INFO ] [AbstractFilterRegistrationBean.java]configure(258) : Mapping filter: 'characterEncodingFilter' to: [/*]
+2019-02-22 16:19:33 [INFO ] [AbstractFilterRegistrationBean.java]configure(258) : Mapping filter: 'springSecurityFilterChain' to: [/*]
+2019-02-22 16:19:33 [INFO ] [AbstractFilterRegistrationBean.java]onStartup(227) : Filter characterEncodingFilter was not registered (possibly already registered?)
+2019-02-22 16:19:33 [INFO ] [ServletRegistrationBean.java]onStartup(190) : Mapping servlet: 'dispatcherServlet' to [/]
+2019-02-22 16:19:37 [INFO ] [DirectJDKLog.java]log(183) : Illegal access: this web application instance has been stopped already.  Could not load .  The eventual following stack trace is caused by an error thrown for debugging purposes as well as to attempt to terminate the thread which caused the illegal access, and has no functional impact.
+2019-02-22 16:19:38 [INFO ] [DefaultSecurityFilterChain.java]<init>(43) : Creating filter chain: Ant [pattern='/**', OPTIONS], []
+2019-02-22 16:19:38 [INFO ] [DefaultSecurityFilterChain.java]<init>(43) : Creating filter chain: org.springframework.security.web.util.matcher.AnyRequestMatcher@1, [org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@63218bb8, org.springframework.security.web.context.SecurityContextPersistenceFilter@3ac4c214, org.springframework.security.web.header.HeaderWriterFilter@529ed917, org.springframework.web.filter.CharacterEncodingFilter@5e6090e3, org.springframework.security.web.authentication.logout.LogoutFilter@1a6621b8, org.springframework.security.web.authentication.www.BasicAuthenticationFilter@5c882eed, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@1178cb71, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@51911cd1, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@531cf898, org.springframework.security.web.session.SessionManagementFilter@457d4f9b, org.springframework.security.web.access.ExceptionTranslationFilter@6c49850, org.springframework.security.web.access.intercept.FilterSecurityInterceptor@a042a0e]
+2019-02-22 16:19:39 [INFO ] [MBeanExporter.java]afterSingletonsInstantiated(431) : Registering beans for JMX exposure on startup
+2019-02-22 16:19:39 [INFO ] [StartupInfoLogger.java]logStarted(57) : Started ServletInitializer in 10.924 seconds (JVM running for 143.581)
+2019-02-22 16:19:39 [INFO ] [DirectJDKLog.java]log(183) : Reloading Context with name [] is completed
+2019-02-22 16:19:42 [INFO ] [DirectJDKLog.java]log(183) : Illegal access: this web application instance has been stopped already.  Could not load .  The eventual following stack trace is caused by an error thrown for debugging purposes as well as to attempt to terminate the thread which caused the illegal access, and has no functional impact.
+2019-02-22 16:19:47 [INFO ] [DirectJDKLog.java]log(183) : Illegal access: this web application instance has been stopped already.  Could not load .  The eventual following stack trace is caused by an error thrown for debugging purposes as well as to attempt to terminate the thread which caused the illegal access, and has no functional impact.
+2019-02-22 16:19:49 [INFO ] [DirectJDKLog.java]log(183) : Reloading Context with name [] has started
+2019-02-22 16:19:49 [INFO ] [DirectJDKLog.java]log(183) : Closing Spring root WebApplicationContext
+2019-02-22 16:19:49 [INFO ] [AbstractApplicationContext.java]doClose(984) : Closing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@275a29b2: startup date [Fri Feb 22 16:19:31 KST 2019]; root of context hierarchy
+2019-02-22 16:19:49 [INFO ] [MBeanExporter.java]destroy(449) : Unregistering JMX-exposed beans on shutdown
+2019-02-22 16:19:52 [INFO ] [StartupInfoLogger.java]logStarting(48) : Starting ServletInitializer on Hyeminui-MacBook-Pro.local with PID 11995 (/Users/hyemin/Documents/_WORK/00_PIA/_WORKSPACE/workspace/PinesSystem/target/classes started by hyemin in /Users/hyemin/Documents/_WORK/00_PIA/_WORKSPACE/workspace/PinesSystem)
+2019-02-22 16:19:52 [INFO ] [SpringApplication.java]logStartupProfileInfo(593) : No active profile set, falling back to default profiles: default
+2019-02-22 16:19:53 [INFO ] [AbstractApplicationContext.java]prepareRefresh(583) : Refreshing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@3a6e9dd: startup date [Fri Feb 22 16:19:53 KST 2019]; root of context hierarchy
+2019-02-22 16:19:54 [INFO ] [AutowiredAnnotationBeanPostProcessor.java]<init>(155) : JSR-330 'javax.inject.Inject' annotation found and supported for autowiring
+2019-02-22 16:19:54 [INFO ] [DirectJDKLog.java]log(183) : Initializing Spring embedded WebApplicationContext
+2019-02-22 16:19:55 [INFO ] [AbstractFilterRegistrationBean.java]configure(258) : Mapping filter: 'simpleCoreFilter' to: [/*]
+2019-02-22 16:19:55 [INFO ] [AbstractFilterRegistrationBean.java]configure(258) : Mapping filter: 'errorPageFilter' to: [/*]
+2019-02-22 16:19:55 [INFO ] [AbstractFilterRegistrationBean.java]configure(258) : Mapping filter: 'characterEncodingFilter' to: [/*]
+2019-02-22 16:19:55 [INFO ] [AbstractFilterRegistrationBean.java]configure(258) : Mapping filter: 'springSecurityFilterChain' to: [/*]
+2019-02-22 16:19:55 [INFO ] [AbstractFilterRegistrationBean.java]onStartup(227) : Filter characterEncodingFilter was not registered (possibly already registered?)
+2019-02-22 16:19:55 [INFO ] [ServletRegistrationBean.java]onStartup(190) : Mapping servlet: 'dispatcherServlet' to [/]
+2019-02-22 16:19:57 [INFO ] [DirectJDKLog.java]log(183) : Illegal access: this web application instance has been stopped already.  Could not load .  The eventual following stack trace is caused by an error thrown for debugging purposes as well as to attempt to terminate the thread which caused the illegal access, and has no functional impact.
+2019-02-22 16:19:59 [INFO ] [DefaultSecurityFilterChain.java]<init>(43) : Creating filter chain: Ant [pattern='/**', OPTIONS], []
+2019-02-22 16:20:00 [INFO ] [DefaultSecurityFilterChain.java]<init>(43) : Creating filter chain: org.springframework.security.web.util.matcher.AnyRequestMatcher@1, [org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@92b3ff4, org.springframework.security.web.context.SecurityContextPersistenceFilter@ccb8fdd, org.springframework.security.web.header.HeaderWriterFilter@6bfadba1, org.springframework.web.filter.CharacterEncodingFilter@61119bb6, org.springframework.security.web.authentication.logout.LogoutFilter@500c27ab, org.springframework.security.web.authentication.www.BasicAuthenticationFilter@5d782424, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@7fd0e020, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@1cc124c9, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@300e2c0, org.springframework.security.web.session.SessionManagementFilter@69c20a53, org.springframework.security.web.access.ExceptionTranslationFilter@6ad797c8, org.springframework.security.web.access.intercept.FilterSecurityInterceptor@72fe78f7]
+2019-02-22 16:20:01 [INFO ] [MBeanExporter.java]afterSingletonsInstantiated(431) : Registering beans for JMX exposure on startup
+2019-02-22 16:20:01 [INFO ] [StartupInfoLogger.java]logStarted(57) : Started ServletInitializer in 9.205 seconds (JVM running for 165.274)
+2019-02-22 16:20:01 [INFO ] [DirectJDKLog.java]log(183) : Reloading Context with name [] is completed
+2019-02-22 16:20:02 [INFO ] [DirectJDKLog.java]log(183) : Illegal access: this web application instance has been stopped already.  Could not load .  The eventual following stack trace is caused by an error thrown for debugging purposes as well as to attempt to terminate the thread which caused the illegal access, and has no functional impact.
+2019-02-22 16:20:07 [INFO ] [DirectJDKLog.java]log(183) : Illegal access: this web application instance has been stopped already.  Could not load .  The eventual following stack trace is caused by an error thrown for debugging purposes as well as to attempt to terminate the thread which caused the illegal access, and has no functional impact.
+2019-02-22 16:20:12 [INFO ] [DirectJDKLog.java]log(183) : Illegal access: this web application instance has been stopped already.  Could not load .  The eventual following stack trace is caused by an error thrown for debugging purposes as well as to attempt to terminate the thread which caused the illegal access, and has no functional impact.
+2019-02-22 16:20:17 [INFO ] [DirectJDKLog.java]log(183) : Illegal access: this web application instance has been stopped already.  Could not load .  The eventual following stack trace is caused by an error thrown for debugging purposes as well as to attempt to terminate the thread which caused the illegal access, and has no functional impact.
+2019-02-22 16:20:22 [INFO ] [DirectJDKLog.java]log(183) : Illegal access: this web application instance has been stopped already.  Could not load .  The eventual following stack trace is caused by an error thrown for debugging purposes as well as to attempt to terminate the thread which caused the illegal access, and has no functional impact.
+2019-02-22 16:20:27 [INFO ] [DirectJDKLog.java]log(183) : Illegal access: this web application instance has been stopped already.  Could not load .  The eventual following stack trace is caused by an error thrown for debugging purposes as well as to attempt to terminate the thread which caused the illegal access, and has no functional impact.
+2019-02-22 16:20:32 [INFO ] [DirectJDKLog.java]log(183) : Illegal access: this web application instance has been stopped already.  Could not load .  The eventual following stack trace is caused by an error thrown for debugging purposes as well as to attempt to terminate the thread which caused the illegal access, and has no functional impact.
+2019-02-22 16:20:37 [INFO ] [DirectJDKLog.java]log(183) : Illegal access: this web application instance has been stopped already.  Could not load .  The eventual following stack trace is caused by an error thrown for debugging purposes as well as to attempt to terminate the thread which caused the illegal access, and has no functional impact.
+2019-02-22 16:20:42 [INFO ] [DirectJDKLog.java]log(183) : Illegal access: this web application instance has been stopped already.  Could not load .  The eventual following stack trace is caused by an error thrown for debugging purposes as well as to attempt to terminate the thread which caused the illegal access, and has no functional impact.
+2019-02-22 16:20:47 [INFO ] [DirectJDKLog.java]log(183) : Illegal access: this web application instance has been stopped already.  Could not load .  The eventual following stack trace is caused by an error thrown for debugging purposes as well as to attempt to terminate the thread which caused the illegal access, and has no functional impact.
+2019-02-22 16:20:52 [INFO ] [DirectJDKLog.java]log(183) : Illegal access: this web application instance has been stopped already.  Could not load .  The eventual following stack trace is caused by an error thrown for debugging purposes as well as to attempt to terminate the thread which caused the illegal access, and has no functional impact.
+2019-02-22 16:20:57 [INFO ] [DirectJDKLog.java]log(183) : Illegal access: this web application instance has been stopped already.  Could not load .  The eventual following stack trace is caused by an error thrown for debugging purposes as well as to attempt to terminate the thread which caused the illegal access, and has no functional impact.
+2019-02-22 16:21:02 [INFO ] [DirectJDKLog.java]log(183) : Illegal access: this web application instance has been stopped already.  Could not load .  The eventual following stack trace is caused by an error thrown for debugging purposes as well as to attempt to terminate the thread which caused the illegal access, and has no functional impact.
+2019-02-22 16:21:03 [INFO ] [DirectJDKLog.java]log(183) : Initializing Spring FrameworkServlet 'dispatcherServlet'
+2019-02-22 16:21:07 [INFO ] [DirectJDKLog.java]log(183) : Illegal access: this web application instance has been stopped already.  Could not load .  The eventual following stack trace is caused by an error thrown for debugging purposes as well as to attempt to terminate the thread which caused the illegal access, and has no functional impact.
+2019-02-22 16:21:12 [INFO ] [DirectJDKLog.java]log(183) : Illegal access: this web application instance has been stopped already.  Could not load .  The eventual following stack trace is caused by an error thrown for debugging purposes as well as to attempt to terminate the thread which caused the illegal access, and has no functional impact.
+2019-02-22 16:21:17 [INFO ] [DirectJDKLog.java]log(183) : Illegal access: this web application instance has been stopped already.  Could not load .  The eventual following stack trace is caused by an error thrown for debugging purposes as well as to attempt to terminate the thread which caused the illegal access, and has no functional impact.
+2019-02-22 16:21:22 [ERROR] [DirectJDKLog.java]log(181) : Unable to create initial connections of pool.
+com.mysql.jdbc.exceptions.jdbc4.MySQLNonTransientConnectionException: Could not create connection to database server. Attempted reconnect 10 times. Giving up.
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:62)
+	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:423)
+	at com.mysql.jdbc.Util.handleNewInstance(Util.java:425)
+	at com.mysql.jdbc.Util.getInstance(Util.java:408)
+	at com.mysql.jdbc.SQLError.createSQLException(SQLError.java:918)
+	at com.mysql.jdbc.SQLError.createSQLException(SQLError.java:897)
+	at com.mysql.jdbc.SQLError.createSQLException(SQLError.java:886)
+	at com.mysql.jdbc.SQLError.createSQLException(SQLError.java:860)
+	at com.mysql.jdbc.ConnectionImpl.connectWithRetries(ConnectionImpl.java:2104)
+	at com.mysql.jdbc.ConnectionImpl.createNewIO(ConnectionImpl.java:2029)
+	at com.mysql.jdbc.ConnectionImpl.<init>(ConnectionImpl.java:779)
+	at com.mysql.jdbc.JDBC4Connection.<init>(JDBC4Connection.java:47)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:62)
+	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:423)
+	at com.mysql.jdbc.Util.handleNewInstance(Util.java:425)
+	at com.mysql.jdbc.ConnectionImpl.getInstance(ConnectionImpl.java:389)
+	at com.mysql.jdbc.NonRegisteringDriver.connect(NonRegisteringDriver.java:330)
+	at org.apache.tomcat.jdbc.pool.PooledConnection.connectUsingDriver(PooledConnection.java:310)
+	at org.apache.tomcat.jdbc.pool.PooledConnection.connect(PooledConnection.java:203)
+	at org.apache.tomcat.jdbc.pool.ConnectionPool.createConnection(ConnectionPool.java:735)
+	at org.apache.tomcat.jdbc.pool.ConnectionPool.borrowConnection(ConnectionPool.java:667)
+	at org.apache.tomcat.jdbc.pool.ConnectionPool.init(ConnectionPool.java:482)
+	at org.apache.tomcat.jdbc.pool.ConnectionPool.<init>(ConnectionPool.java:154)
+	at org.apache.tomcat.jdbc.pool.DataSourceProxy.pCreatePool(DataSourceProxy.java:118)
+	at org.apache.tomcat.jdbc.pool.DataSourceProxy.createPool(DataSourceProxy.java:107)
+	at org.apache.tomcat.jdbc.pool.DataSourceProxy.getConnection(DataSourceProxy.java:131)
+	at org.springframework.jdbc.datasource.DataSourceUtils.doGetConnection(DataSourceUtils.java:111)
+	at org.springframework.jdbc.datasource.DataSourceUtils.getConnection(DataSourceUtils.java:77)
+	at org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:394)
+	at org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:474)
+	at org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:484)
+	at org.springframework.jdbc.core.JdbcTemplate.queryForObject(JdbcTemplate.java:494)
+	at com.pines.student.login.StaffLoginDao.loginStaffSecurity(StaffLoginDao.java:30)
+	at com.pines.student.login.StaffLoginDao$$FastClassBySpringCGLIB$$e91754b9.invoke(<generated>)
+	at org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:204)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.invokeJoinpoint(CglibAopProxy.java:738)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:157)
+	at org.springframework.dao.support.PersistenceExceptionTranslationInterceptor.invoke(PersistenceExceptionTranslationInterceptor.java:136)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
+	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:673)
+	at com.pines.student.login.StaffLoginDao$$EnhancerBySpringCGLIB$$a9b30740.loginStaffSecurity(<generated>)
+	at com.pines.student.login.StaffLoginServiceImpl.loadUserByUsername(StaffLoginServiceImpl.java:22)
+	at org.springframework.security.authentication.dao.DaoAuthenticationProvider.retrieveUser(DaoAuthenticationProvider.java:114)
+	at org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider.authenticate(AbstractUserDetailsAuthenticationProvider.java:144)
+	at org.springframework.security.authentication.ProviderManager.authenticate(ProviderManager.java:174)
+	at org.springframework.security.authentication.ProviderManager.authenticate(ProviderManager.java:199)
+	at org.springframework.security.web.authentication.www.BasicAuthenticationFilter.doFilterInternal(BasicAuthenticationFilter.java:180)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:197)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)
+	at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:64)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)
+	at org.springframework.security.web.context.SecurityContextPersistenceFilter.doFilter(SecurityContextPersistenceFilter.java:105)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)
+	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:56)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)
+	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:214)
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:177)
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:346)
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:262)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:243)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:210)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:197)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:243)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:210)
+	at org.springframework.boot.web.support.ErrorPageFilter.doFilter(ErrorPageFilter.java:115)
+	at org.springframework.boot.web.support.ErrorPageFilter.access$000(ErrorPageFilter.java:59)
+	at org.springframework.boot.web.support.ErrorPageFilter$1.doFilterInternal(ErrorPageFilter.java:90)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)
+	at org.springframework.boot.web.support.ErrorPageFilter.doFilter(ErrorPageFilter.java:108)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:243)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:210)
+	at com.pines.student.config.SimpleCoreFilter.doFilter(SimpleCoreFilter.java:32)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:243)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:210)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:222)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:123)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:502)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:171)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:100)
+	at org.apache.catalina.valves.AccessLogValve.invoke(AccessLogValve.java:953)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:118)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:408)
+	at org.apache.coyote.http11.AbstractHttp11Processor.process(AbstractHttp11Processor.java:1041)
+	at org.apache.coyote.AbstractProtocol$AbstractConnectionHandler.process(AbstractProtocol.java:603)
+	at org.apache.tomcat.util.net.JIoEndpoint$SocketProcessor.run(JIoEndpoint.java:310)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+Caused by: com.mysql.jdbc.exceptions.jdbc4.CommunicationsException: Communications link failure
+
+The last packet sent successfully to the server was 0 milliseconds ago. The driver has not received any packets from the server.
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:62)
+	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:423)
+	at com.mysql.jdbc.Util.handleNewInstance(Util.java:425)
+	at com.mysql.jdbc.SQLError.createCommunicationsException(SQLError.java:989)
+	at com.mysql.jdbc.MysqlIO.<init>(MysqlIO.java:341)
+	at com.mysql.jdbc.ConnectionImpl.coreConnect(ConnectionImpl.java:2196)
+	at com.mysql.jdbc.ConnectionImpl.connectWithRetries(ConnectionImpl.java:2045)
+	... 89 common frames omitted
+Caused by: java.net.ConnectException: Connection refused (Connection refused)
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:350)
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:206)
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:188)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:392)
+	at java.net.Socket.connect(Socket.java:589)
+	at com.mysql.jdbc.StandardSocketFactory.connect(StandardSocketFactory.java:211)
+	at com.mysql.jdbc.MysqlIO.<init>(MysqlIO.java:300)
+	... 91 common frames omitted
+2019-02-22 16:21:22 [INFO ] [DirectJDKLog.java]log(183) : Illegal access: this web application instance has been stopped already.  Could not load .  The eventual following stack trace is caused by an error thrown for debugging purposes as well as to attempt to terminate the thread which caused the illegal access, and has no functional impact.
